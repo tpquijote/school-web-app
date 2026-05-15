@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Szám-Mahjong</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <!-- Main Menu -->
+        <div id="main-menu" class="screen active">
+            <div class="menu-content">
+                <h1>Szám-Mahjong</h1>
+                <p class="subtitle">Válassz osztályt a kezdéshez!</p>
+                <div class="grade-buttons">
+                    <button class="btn grade-btn" data-grade="1">1. Osztály</button>
+                    <button class="btn grade-btn" data-grade="2">2. Osztály</button>
+                    <button class="btn grade-btn" data-grade="3">3. Osztály</button>
+                    <button class="btn grade-btn" data-grade="4">4. Osztály</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="screen">
+            <header class="game-header">
+                <div class="stats">
+                    <span id="grade-display">1. Osztály</span> | 
+                    <span>Párok: <span id="pairs-left">0</span></span>
+                </div>
+                <button id="back-btn" class="btn small-btn">Vissza</button>
+            </header>
+            
+            <div id="game-board-container">
+                <div id="game-board">
+                    <!-- Tiles will be dynamically injected here -->
+                </div>
+            </div>
+            
+            <div id="message-area"></div>
+        </div>
+
+        <!-- Win Screen -->
+        <div id="win-screen" class="screen">
+            <div class="menu-content">
+                <h1>Gratulálok!</h1>
+                <p>Sikeresen megoldottad az összes feladatot!</p>
+                <button id="play-again-btn" class="btn">Új játék</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/levels.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>

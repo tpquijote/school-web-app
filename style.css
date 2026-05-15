@@ -1,0 +1,273 @@
+:root {
+    --primary-color: #ff6b6b;
+    --secondary-color: #4ecdc4;
+    --accent-color: #ffe66d;
+    --background-color: #1a535c;
+    --text-color: #f7fff7;
+    --tile-bg: #ffffff;
+    --tile-text: #2b2d42;
+    --tile-shadow: #d3d3d3;
+    --tile-selected: #ffe66d;
+    --tile-locked: #e0e0e0;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+}
+
+body {
+    font-family: 'Nunito', sans-serif;
+    background: linear-gradient(135deg, var(--background-color), #0f3036);
+    color: var(--text-color);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#app {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.screen.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Main Menu & Win Screen */
+.menu-content {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 3rem;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+h1 {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    color: var(--accent-color);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.subtitle {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.grade-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.btn {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 1.2rem;
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    background: var(--primary-color);
+    color: white;
+    transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+    box-shadow: 0 6px 0 #cc5555, 0 10px 10px rgba(0,0,0,0.2);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 0 #cc5555, 0 12px 15px rgba(0,0,0,0.3);
+}
+
+.btn:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 #cc5555, 0 4px 5px rgba(0,0,0,0.2);
+}
+
+.grade-btn:nth-child(2) { background: var(--secondary-color); box-shadow: 0 6px 0 #3baba3; }
+.grade-btn:nth-child(2):hover { box-shadow: 0 8px 0 #3baba3; }
+.grade-btn:nth-child(2):active { box-shadow: 0 2px 0 #3baba3; }
+
+.grade-btn:nth-child(3) { background: #ff9f1c; box-shadow: 0 6px 0 #cc7f16; }
+.grade-btn:nth-child(3):hover { box-shadow: 0 8px 0 #cc7f16; }
+.grade-btn:nth-child(3):active { box-shadow: 0 2px 0 #cc7f16; }
+
+.grade-btn:nth-child(4) { background: #9d4edd; box-shadow: 0 6px 0 #7b3db0; }
+.grade-btn:nth-child(4):hover { box-shadow: 0 8px 0 #7b3db0; }
+.grade-btn:nth-child(4):active { box-shadow: 0 2px 0 #7b3db0; }
+
+.small-btn {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+}
+
+/* Game Screen */
+.game-header {
+    width: 100%;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.2);
+    position: absolute;
+    top: 0;
+    z-index: 10;
+}
+
+.stats {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+#game-board-container {
+    flex-grow: 1;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    perspective: 1000px;
+    margin-top: 60px;
+}
+
+#game-board {
+    position: relative;
+    /* Dimensions will be set via JS based on layout */
+}
+
+.tile {
+    position: absolute;
+    width: 76px;
+    height: 96px;
+    background: var(--tile-bg);
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 4px;
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: var(--tile-text);
+    /* Solid 3D extrusion effect */
+    box-shadow: 
+        1px 1px 0 #e6e6e6,
+        2px 2px 0 #d9d9d9,
+        3px 3px 0 #cccccc,
+        4px 4px 0 #bfbfbf,
+        5px 5px 0 #b3b3b3,
+        6px 6px 0 #a6a6a6,
+        7px 7px 10px rgba(0,0,0,0.5);
+    cursor: pointer;
+    transition: transform 0.2s, background-color 0.2s, box-shadow 0.2s;
+    border: 1px solid #f0f0f0;
+    z-index: 1; /* will be overridden by JS based on layer */
+}
+
+/* Tile state classes */
+.tile.locked {
+    background: var(--tile-locked);
+    color: #777;
+    cursor: not-allowed;
+    /* Make locked tiles visually darker to emphasize depth */
+    filter: brightness(0.85);
+}
+
+.tile.free:hover {
+    transform: translateY(-2px) translateX(-2px);
+    background: #f0f8ff;
+    box-shadow: 
+        1px 1px 0 #e6e6e6,
+        2px 2px 0 #d9d9d9,
+        3px 3px 0 #cccccc,
+        4px 4px 0 #bfbfbf,
+        5px 5px 0 #b3b3b3,
+        6px 6px 0 #a6a6a6,
+        8px 8px 12px rgba(0,0,0,0.6);
+    z-index: 100 !important;
+}
+
+.tile.selected {
+    background: var(--tile-selected);
+    border-color: #ff9f1c;
+    transform: translateY(-2px) translateX(-2px);
+    box-shadow: 
+        1px 1px 0 #cc7f16,
+        2px 2px 0 #aa6611,
+        3px 3px 0 #aa6611,
+        0 0 15px var(--tile-selected),
+        5px 5px 10px rgba(0,0,0,0.5);
+    z-index: 101 !important;
+}
+
+.tile.matched {
+    animation: matchAnim 0.5s forwards;
+    pointer-events: none;
+}
+
+.tile.wrong-match {
+    animation: shakeAnim 0.4s;
+    background: #ffcccc;
+}
+
+@keyframes matchAnim {
+    0% { transform: scale(1.05); opacity: 1; }
+    50% { transform: scale(1.3) rotate(5deg); opacity: 0.8; }
+    100% { transform: scale(0); opacity: 0; }
+}
+
+@keyframes shakeAnim {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-5px) rotate(-2deg); }
+    40%, 80% { transform: translateX(5px) rotate(2deg); }
+}
+
+#message-area {
+    position: absolute;
+    bottom: 2rem;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--accent-color);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    transition: opacity 0.3s;
+    opacity: 0;
+}
+
+#message-area.show {
+    opacity: 1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .tile {
+        width: 45px;
+        height: 60px;
+        font-size: 1rem;
+    }
+    h1 {
+        font-size: 3rem;
+    }
+}
