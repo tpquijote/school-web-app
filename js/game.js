@@ -71,35 +71,70 @@ function startGame(grade) {
 
 function generateTiles(levelConfig) {
     const layout = gameLayout; // from levels.js
-    const tiles = [];
     
-    // We need layout.length / 2 pairs
+    // Create a working copy of the layout to simulate removing tiles backwards
+    let unassignedSlots = layout.map((pos, index) => ({
+        ...pos,
+        id: `slot_${index}`
+    }));
+    
+    const assignedTiles = [];
     const numPairs = layout.length / 2;
-    const generatedPairs = [];
+    
+    // Helper to find a slot in our working copy
+    const getSlotAt = (slots, l, r, c) => slots.find(s => s.l === l && s.r === r && s.c === c);
     
     for (let i = 0; i < numPairs; i++) {
-        generatedPairs.push(levelConfig.generatePair());
+        // Find slots that are "free" in the current partially-built board
+        const freeSlots = unassignedSlots.filter(t => {
+            const topBlocked = getSlotAt(unassignedSlots, t.l + 1, t.r, t.c);
+            const leftBlocked = getSlotAt(unassignedSlots, t.l, t.r, t.c - 1);
+            const rightBlocked = getSlotAt(unassignedSlots, t.l, t.r, t.c + 1);
+            return !topBlocked && (!leftBlocked || !rightBlocked);
+        });
+        
+        if (freeSlots.length < 2) {
+            console.error("Deadlock in generation! Layout might be invalid.");
+            break;
+        }
+        
+        // Pick 2 random free slots
+        const idx1 = Math.floor(Math.random() * freeSlots.length);
+        let idx2 = Math.floor(Math.random() * freeSlots.length);
+        while (idx1 === idx2) {
+            idx2 = Math.floor(Math.random() * freeSlots.length);
+        }
+        
+        const slot1 = freeSlots[idx1];
+        const slot2 = freeSlots[idx2];
+        
+        // Generate pair values
+        const pair = levelConfig.generatePair();
+        
+        // Assign values to the selected slots
+        assignedTiles.push({
+            ...slot1,
+            id: `t_${i}_A`,
+            value: pair.value,
+            text: pair.texts[0],
+            pairId: i,
+            isFree: false
+        });
+        
+        assignedTiles.push({
+            ...slot2,
+            id: `t_${i}_B`,
+            value: pair.value,
+            text: pair.texts[1],
+            pairId: i,
+            isFree: false
+        });
+        
+        // Remove these slots from the unassigned pool (simulating that they were "matched" and removed)
+        unassignedSlots = unassignedSlots.filter(s => s.id !== slot1.id && s.id !== slot2.id);
     }
     
-    // Flatten pairs into individual tile data objects
-    const tileDataList = [];
-    generatedPairs.forEach((pair, index) => {
-        tileDataList.push({ id: `t_${index}_A`, value: pair.value, text: pair.texts[0], pairId: index });
-        tileDataList.push({ id: `t_${index}_B`, value: pair.value, text: pair.texts[1], pairId: index });
-    });
-    
-    // Shuffle the tiles
-    for (let i = tileDataList.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [tileDataList[i], tileDataList[j]] = [tileDataList[j], tileDataList[i]];
-    }
-    
-    // Assign layout coordinates to shuffled tiles
-    return layout.map((pos, index) => ({
-        ...pos,
-        ...tileDataList[index],
-        isFree: false
-    }));
+    return assignedTiles;
 }
 
 function renderBoard() {
