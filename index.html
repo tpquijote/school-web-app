@@ -13,12 +13,41 @@
         <div id="main-menu" class="screen active">
             <div class="menu-content">
                 <h1>Szám-Mahjong</h1>
-                <p class="subtitle">Válassz osztályt a kezdéshez!</p>
-                <div class="grade-buttons">
-                    <button class="btn grade-btn" data-grade="1">1. Osztály</button>
-                    <button class="btn grade-btn" data-grade="2">2. Osztály</button>
-                    <button class="btn grade-btn" data-grade="3">3. Osztály</button>
-                    <button class="btn grade-btn" data-grade="4">4. Osztály</button>
+                <p class="subtitle">2. Osztályos Matematika</p>
+                <div class="grade-buttons single-btn-layout">
+                    <button class="btn grade-btn" data-grade="2">Játék Indítása</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Screen (2nd Grade Configuration) -->
+        <div id="settings-screen" class="screen">
+            <div class="menu-content settings-content">
+                <h1>Beállítások</h1>
+                <p class="subtitle">Szabd testre a feladatokat!</p>
+                
+                <div class="settings-group">
+                    <label for="limit-slider" class="settings-label">
+                        Számkör limit: <span id="limit-val">100</span>
+                    </label>
+                    <div class="slider-container">
+                        <input type="range" id="limit-slider" min="10" max="100" step="10" value="100" class="modern-slider">
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <span class="settings-label">Műveletek:</span>
+                    <div class="ops-selectors">
+                        <button class="op-toggle-btn active" data-op="+">+</button>
+                        <button class="op-toggle-btn active" data-op="-">-</button>
+                        <button class="op-toggle-btn active" data-op="*">×</button>
+                        <button class="op-toggle-btn active" data-op="/">÷</button>
+                    </div>
+                </div>
+
+                <div class="settings-actions">
+                    <button id="start-game-btn" class="btn">Indítás</button>
+                    <button id="settings-back-btn" class="btn secondary-btn">Vissza</button>
                 </div>
             </div>
         </div>
@@ -27,7 +56,7 @@
         <div id="game-screen" class="screen">
             <header class="game-header">
                 <div class="stats">
-                    <span id="grade-display">1. Osztály</span> | 
+                    <span id="grade-display">2. Osztály</span> | 
                     <span>Párok: <span id="pairs-left">0</span></span>
                 </div>
                 <button id="back-btn" class="btn small-btn">Vissza</button>
@@ -47,7 +76,10 @@
             <div class="menu-content">
                 <h1>Gratulálok!</h1>
                 <p>Sikeresen megoldottad az összes feladatot!</p>
-                <button id="play-again-btn" class="btn">Új játék</button>
+                <div class="win-actions">
+                    <button id="play-again-btn" class="btn">Új játék</button>
+                    <button id="win-back-to-menu-btn" class="btn secondary-btn">Főmenü</button>
+                </div>
             </div>
         </div>
     </div>

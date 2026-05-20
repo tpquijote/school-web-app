@@ -11,10 +11,12 @@ let currentLevel = null;
 let activeTiles = [];
 let selectedTile = null;
 let pairsLeft = 0;
+let lastGradePlayed = null;
 
 // DOM Elements
 const screens = {
     mainMenu: document.getElementById('main-menu'),
+    settings: document.getElementById('settings-screen'),
     game: document.getElementById('game-screen'),
     win: document.getElementById('win-screen')
 };
@@ -24,16 +26,74 @@ const gradeDisplay = document.getElementById('grade-display');
 const pairsLeftDisplay = document.getElementById('pairs-left');
 const messageArea = document.getElementById('message-area');
 
-// Event Listeners
+// Settings Elements
+const limitSlider = document.getElementById('limit-slider');
+const limitVal = document.getElementById('limit-val');
+const opButtons = document.querySelectorAll('.op-toggle-btn');
+const startGameBtn = document.getElementById('start-game-btn');
+const settingsBackBtn = document.getElementById('settings-back-btn');
+const winBackToMenuBtn = document.getElementById('win-back-to-menu-btn');
+
+// Event Listeners for main menu grade buttons
 document.querySelectorAll('.grade-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
         const grade = parseInt(e.target.dataset.grade);
-        startGame(grade);
+        if (grade === 2) {
+            switchScreen('settings');
+        } else {
+            startGame(grade);
+        }
     });
 });
 
+// Settings Slider Listener
+if (limitSlider && limitVal) {
+    limitSlider.addEventListener('input', (e) => {
+        limitVal.textContent = e.target.value;
+    });
+}
+
+// Settings Operator Toggle Listeners
+opButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+        btn.classList.toggle('active');
+        const activeOps = document.querySelectorAll('.op-toggle-btn.active');
+        if (activeOps.length === 0) {
+            btn.classList.add('active');
+            showMessage('Legalább egy műveletet ki kell választani!', '#ff6b6b');
+        }
+    });
+});
+
+// Start Game from Settings Listener
+if (startGameBtn) {
+    startGameBtn.addEventListener('click', () => {
+        const limit = parseInt(limitSlider.value);
+        const ops = [];
+        document.querySelectorAll('.op-toggle-btn.active').forEach(btn => {
+            ops.push(btn.dataset.op);
+        });
+        
+        window.grade2Settings.limit = limit;
+        window.grade2Settings.ops = ops;
+        
+        startGame(2);
+    });
+}
+
+// Navigation Back Buttons Listeners
 document.getElementById('back-btn').addEventListener('click', showMainMenu);
-document.getElementById('play-again-btn').addEventListener('click', showMainMenu);
+if (settingsBackBtn) settingsBackBtn.addEventListener('click', showMainMenu);
+if (winBackToMenuBtn) winBackToMenuBtn.addEventListener('click', showMainMenu);
+
+// Play Again Listener
+document.getElementById('play-again-btn').addEventListener('click', () => {
+    if (lastGradePlayed !== null) {
+        startGame(lastGradePlayed);
+    } else {
+        showMainMenu();
+    }
+});
 
 function switchScreen(screenName) {
     Object.values(screens).forEach(s => s.classList.remove('active'));
@@ -56,6 +116,7 @@ function showMessage(text, color = 'var(--accent-color)') {
 }
 
 function startGame(grade) {
+    lastGradePlayed = grade;
     currentLevel = levelSeeds[grade];
     gradeDisplay.textContent = currentLevel.name;
     

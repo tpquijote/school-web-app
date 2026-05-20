@@ -1,5 +1,11 @@
 // js/levels.js
 
+// Global settings for 2nd Grade
+window.grade2Settings = {
+    limit: 100,
+    ops: ['+', '-', '*', '/'] // default all operations
+};
+
 // Helper functions to generate random numbers
 const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
@@ -45,58 +51,103 @@ const levelSeeds = {
     
     2: {
         name: "2. Osztály",
-        description: "Összeadás/kivonás 100-ig, alap szorzás",
+        description: "Testreszabható műveletek",
         generatePair: () => {
-            // Decide operation type: 70% add/sub, 30% mul
-            const isMul = Math.random() < 0.3;
-            let target;
+            const limit = window.grade2Settings.limit;
+            const activeOps = window.grade2Settings.ops.length > 0 ? window.grade2Settings.ops : ['+'];
             
-            const generateExpression = (val, forceMul = false) => {
-                if (Math.random() < 0.3) return val.toString();
-                
-                if (forceMul || isMul) {
-                    // Try to find factors
-                    const factors = [];
-                    for(let i=1; i<=10; i++) {
-                        if (val % i === 0 && val / i <= 10) {
-                            factors.push([i, val/i]);
-                        }
-                    }
-                    if (factors.length > 0) {
-                        const [a, b] = factors[getRandomInt(0, factors.length-1)];
-                        return `${a} * ${b}`;
-                    }
-                }
-                
-                // Fallback to add/sub
-                const isAdd = Math.random() > 0.5;
-                if (isAdd) {
+            // Choose a primary operation to determine the target value
+            const primaryOp = activeOps[Math.floor(Math.random() * activeOps.length)];
+            
+            let target = 0;
+            if (primaryOp === '+' || primaryOp === '-') {
+                target = getRandomInt(0, limit);
+            } else if (primaryOp === '*') {
+                const maxA = Math.min(10, limit);
+                const a = getRandomInt(1, maxA);
+                const maxB = Math.floor(limit / a);
+                const b = getRandomInt(1, maxB || 1);
+                target = a * b;
+            } else if (primaryOp === '/') {
+                const maxDivisor = Math.min(10, limit);
+                const b = getRandomInt(2, maxDivisor || 2);
+                const maxTarget = Math.floor(limit / b);
+                target = getRandomInt(1, maxTarget || 1);
+            }
+            
+            // Helper to generate expression of a given type for a target
+            const generateExpression = (val, opType) => {
+                if (opType === '+') {
                     const a = getRandomInt(0, val);
                     const b = val - a;
                     return `${a} + ${b}`;
-                } else {
-                    const maxAdd = 100 - val;
-                    const b = getRandomInt(0, maxAdd);
+                } else if (opType === '-') {
+                    const maxB = limit - val;
+                    const b = getRandomInt(0, maxB);
                     const a = val + b;
                     return `${a} - ${b}`;
+                } else if (opType === '*') {
+                    const factors = [];
+                    for (let i = 1; i <= 10; i++) {
+                        if (val % i === 0 && val / i <= 10) {
+                            factors.push([i, val / i]);
+                        }
+                    }
+                    if (factors.length > 0) {
+                        const [a, b] = factors[getRandomInt(0, factors.length - 1)];
+                        return `${a} × ${b}`;
+                    }
+                    const fallbackOps = activeOps.filter(o => o !== '*');
+                    if (fallbackOps.length > 0) {
+                        return generateExpression(val, fallbackOps[getRandomInt(0, fallbackOps.length - 1)]);
+                    }
+                    return val.toString();
+                } else if (opType === '/') {
+                    const validDivisors = [];
+                    for (let d = 2; d <= 10; d++) {
+                        if (val * d <= limit) {
+                            validDivisors.push(d);
+                        }
+                    }
+                    if (validDivisors.length > 0) {
+                        const d = validDivisors[getRandomInt(0, validDivisors.length - 1)];
+                        return `${val * d} ÷ ${d}`;
+                    }
+                    const fallbackOps = activeOps.filter(o => o !== '/');
+                    if (fallbackOps.length > 0) {
+                        return generateExpression(val, fallbackOps[getRandomInt(0, fallbackOps.length - 1)]);
+                    }
+                    return val.toString();
                 }
+                return val.toString();
             };
-
-            if (isMul) {
-                const a = getRandomInt(1, 10);
-                const b = getRandomInt(1, 10);
-                target = a * b;
+            
+            const rand = Math.random();
+            const op1 = activeOps[getRandomInt(0, activeOps.length - 1)];
+            const op2 = activeOps[getRandomInt(0, activeOps.length - 1)];
+            
+            let text1, text2;
+            if (rand < 0.15) {
+                text1 = target.toString();
+                text2 = generateExpression(target, op2);
+            } else if (rand < 0.3) {
+                text1 = generateExpression(target, op1);
+                text2 = target.toString();
             } else {
-                target = getRandomInt(0, 100);
+                text1 = generateExpression(target, op1);
+                text2 = generateExpression(target, op2);
             }
             
-            let exp1 = generateExpression(target, isMul);
-            let exp2 = generateExpression(target, isMul);
-            if (exp1 === target.toString() && exp2 === target.toString()) {
-                exp1 = `${target} + 0`;
+            if (text1 === text2) {
+                const fallbackOps = activeOps.filter(o => o !== op2);
+                if (fallbackOps.length > 0) {
+                    text2 = generateExpression(target, fallbackOps[getRandomInt(0, fallbackOps.length - 1)]);
+                } else {
+                    text2 = target.toString();
+                }
             }
             
-            return { value: target, texts: [exp1, exp2] };
+            return { value: target, texts: [text1, text2] };
         }
     },
 
