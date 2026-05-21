@@ -12,10 +12,13 @@
         <!-- Main Menu -->
         <div id="main-menu" class="screen active">
             <div class="menu-content">
-                <h1>Szám-Mahjong</h1>
-                <p class="subtitle">2. Osztályos Matematika</p>
-                <div class="grade-buttons single-btn-layout">
-                    <button class="btn grade-btn" data-grade="2">Játék Indítása</button>
+                <h1>Szám-Játékok</h1>
+                <p class="subtitle">Játékos matematika gyerekeknek</p>
+                <div class="mode-buttons">
+                    <button class="btn mode-btn" data-mode="mahjong">Szám-Mahjong</button>
+                    <button class="btn mode-btn secondary-btn" id="duel-mode-btn" data-mode="duel">Szám-Memória Párbaj</button>
+                    <button class="btn mode-btn" id="conquest-mode-btn" data-mode="conquest" style="background: #ff9f1c; box-shadow: 0 6px 0 #cc7f16;">Szám-Hódítók (Connect-4)</button>
+                    <button class="btn mode-btn" id="race-mode-btn" data-mode="race" style="background: #a29bfe; box-shadow: 0 6px 0 #6c5ce7;">Matematikai Kaland (Társasjáték)</button>
                 </div>
             </div>
         </div>
@@ -45,6 +48,15 @@
                     </div>
                 </div>
 
+                <div class="settings-group" id="memory-time-group" style="display: none;">
+                    <label for="memory-time-slider" class="settings-label">
+                        Kártyák mutatási ideje: <span id="memory-time-val">2.0</span> mp
+                    </label>
+                    <div class="slider-container">
+                        <input type="range" id="memory-time-slider" min="0.5" max="5.0" step="0.5" value="2.0" class="modern-slider">
+                    </div>
+                </div>
+
                 <div class="settings-actions">
                     <button id="start-game-btn" class="btn">Indítás</button>
                     <button id="settings-back-btn" class="btn secondary-btn">Vissza</button>
@@ -52,7 +64,7 @@
             </div>
         </div>
 
-        <!-- Game Screen -->
+        <!-- Game Screen (Mahjong) -->
         <div id="game-screen" class="screen">
             <header class="game-header">
                 <div class="stats">
@@ -71,7 +83,134 @@
             <div id="message-area"></div>
         </div>
 
-        <!-- Win Screen -->
+        <!-- Duel Screen (2-Player Memory) -->
+        <div id="duel-screen" class="screen">
+            <header class="game-header">
+                <div class="stats">
+                    <span id="duel-grade-display">2. Osztály</span> |
+                    <span id="duel-pairs-left">Párok: 18</span>
+                </div>
+                <div id="duel-turn-display" class="turn-indicator">Kék Játékos jön</div>
+                <button id="duel-back-btn" class="btn small-btn">Vissza</button>
+            </header>
+            
+            <div class="duel-layout">
+                <!-- Player 1 Column -->
+                <div id="player1-card" class="player-card active">
+                    <div class="player-avatar">🟦</div>
+                    <div class="player-name">Kék Játékos</div>
+                    <div class="player-score" id="player1-score">0</div>
+                    <div class="active-badge">Aktív</div>
+                </div>
+                
+                <!-- Board Center -->
+                <div id="duel-board-container">
+                    <div id="duel-board">
+                        <!-- 36 memory cards will be dynamically injected here -->
+                    </div>
+                </div>
+                
+                <!-- Player 2 Column -->
+                <div id="player2-card" class="player-card">
+                    <div class="player-avatar">🟥</div>
+                    <div class="player-name">Piros Játékos</div>
+                    <div class="player-score" id="player2-score">0</div>
+                    <div class="active-badge">Aktív</div>
+                </div>
+            </div>
+            
+            <div id="duel-message-area"></div>
+        </div>
+
+        <!-- Conquest Screen (Connect-4 Math Conquest) -->
+        <div id="conquest-screen" class="screen">
+            <header class="game-header">
+                <div class="stats">
+                    <span id="conquest-grade-display">2. Osztály</span> |
+                    <span id="conquest-pairs-left">Hátralévő helyek: 36</span>
+                </div>
+                <div id="conquest-turn-display" class="turn-indicator">Kék Játékos jön</div>
+                <button id="conquest-back-btn" class="btn small-btn">Vissza</button>
+            </header>
+            
+            <div class="conquest-layout">
+                <!-- Player 1 Column -->
+                <div id="conquest-player1-card" class="player-card active">
+                    <div class="player-avatar">🟦</div>
+                    <div class="player-name">Kék Játékos</div>
+                    <div class="player-score" id="conquest-player1-score">0</div>
+                    <div class="active-badge">Aktív</div>
+                </div>
+                
+                <!-- Board Center -->
+                <div id="conquest-board-container">
+                    <div id="conquest-board">
+                        <!-- 36 tiles will be dynamically injected here -->
+                    </div>
+                </div>
+                
+                <!-- Player 2 Column -->
+                <div id="conquest-player2-card" class="player-card">
+                    <div class="player-avatar">🟥</div>
+                    <div class="player-name">Piros Játékos</div>
+                    <div class="player-score" id="conquest-player2-score">0</div>
+                    <div class="active-badge">Aktív</div>
+                </div>
+            </div>
+            
+            <div id="conquest-message-area"></div>
+        </div>
+
+        <!-- Race Screen (Matematikai Kaland) -->
+        <div id="race-screen" class="screen">
+            <header class="game-header">
+                <div class="stats">
+                    <span id="race-grade-display">2. Osztály</span>
+                </div>
+                <div id="race-turn-display" class="turn-indicator">Kék Játékos jön</div>
+                <button id="race-back-btn" class="btn small-btn">Vissza</button>
+            </header>
+            <div class="race-content-container">
+                <div class="race-layout">
+                    <!-- Player 1 Card -->
+                    <div id="race-player1-card" class="player-card active">
+                        <div class="player-avatar">🟦</div>
+                        <div class="player-name">Kék Játékos</div>
+                        <div class="player-score" id="race-player1-score">Mező: START</div>
+                        <div class="active-badge">Aktív</div>
+                    </div>
+                    
+                    <!-- Board Center -->
+                    <div id="race-board-container">
+                        <div id="race-board">
+                            <!-- 36 winding path spaces will be dynamically injected here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Player 2 Card -->
+                    <div id="race-player2-card" class="player-card">
+                        <div class="player-avatar">🟥</div>
+                        <div class="player-name">Piros Játékos</div>
+                        <div class="player-score" id="race-player2-score">Mező: START</div>
+                        <div class="active-badge">Aktív</div>
+                    </div>
+                </div>
+                
+                <!-- Question Panel -->
+                <div id="race-question-panel" class="race-question-panel">
+                    <div class="question-header" id="race-question-header">Kék Játékos feladata:</div>
+                    <div class="question-body">
+                        <span class="question-text" id="race-question-text">5 + 4 = </span>
+                        <input type="number" id="race-answer-input" class="race-input" placeholder="?" min="0" max="999" autofocus>
+                        <button id="race-submit-btn" class="btn small-btn">Beküld</button>
+                    </div>
+                </div>
+                
+                <div id="race-message-area"></div>
+            </div>
+        </div>
+
+        <!-- Win Screen (Mahjong) -->
         <div id="win-screen" class="screen">
             <div class="menu-content">
                 <h1>Gratulálok!</h1>
@@ -79,6 +218,67 @@
                 <div class="win-actions">
                     <button id="play-again-btn" class="btn">Új játék</button>
                     <button id="win-back-to-menu-btn" class="btn secondary-btn">Főmenü</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Duel Win Screen -->
+        <div id="duel-win-screen" class="screen">
+            <div class="menu-content">
+                <h1 id="duel-winner-title">Gratulálok!</h1>
+                <p id="duel-winner-text">A Kék Játékos nyert!</p>
+                
+                <div class="duel-win-scores">
+                    <div class="final-score-block p1">
+                        <div class="final-score-label">🟦 Kék Játékos</div>
+                        <div class="final-score-val" id="duel-p1-final-score">0</div>
+                    </div>
+                    <div class="final-score-block p2">
+                        <div class="final-score-label">🟥 Piros Játékos</div>
+                        <div class="final-score-val" id="duel-p2-final-score">0</div>
+                    </div>
+                </div>
+                
+                <div class="win-actions">
+                    <button id="duel-play-again-btn" class="btn">Új játék</button>
+                    <button id="duel-win-back-to-menu-btn" class="btn secondary-btn">Főmenü</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Conquest Win Screen -->
+        <div id="conquest-win-screen" class="screen">
+            <div class="menu-content">
+                <h1 id="conquest-winner-title">Gratulálok!</h1>
+                <p id="conquest-winner-text">A Kék Játékos nyert!</p>
+                
+                <div class="conquest-win-scores">
+                    <div class="final-score-block p1">
+                        <div class="final-score-label">🟦 Kék Játékos</div>
+                        <div class="final-score-val" id="conquest-p1-final-score">0</div>
+                    </div>
+                    <div class="final-score-block p2">
+                        <div class="final-score-label">🟥 Piros Játékos</div>
+                        <div class="final-score-val" id="conquest-p2-final-score">0</div>
+                    </div>
+                </div>
+                
+                <div class="win-actions">
+                    <button id="conquest-play-again-btn" class="btn">Új játék</button>
+                    <button id="conquest-win-back-to-menu-btn" class="btn secondary-btn">Főmenü</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Race Win Screen -->
+        <div id="race-win-screen" class="screen">
+            <div class="menu-content">
+                <h1 id="race-winner-title">Gratulálok!</h1>
+                <p id="race-winner-text">A Kék Játékos nyert!</p>
+                
+                <div class="win-actions">
+                    <button id="race-play-again-btn" class="btn">Új játék</button>
+                    <button id="race-win-back-to-menu-btn" class="btn secondary-btn">Főmenü</button>
                 </div>
             </div>
         </div>

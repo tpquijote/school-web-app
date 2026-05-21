@@ -9,6 +9,10 @@
     --tile-shadow: #d3d3d3;
     --tile-selected: #ffe66d;
     --tile-locked: #e0e0e0;
+    --player1-color: #4ecdc4;
+    --player1-shadow: #3baba3;
+    --player2-color: #ff6b6b;
+    --player2-shadow: #cc5555;
 }
 
 * {
@@ -245,7 +249,7 @@ h1 {
     40%, 80% { transform: translateX(5px) rotate(2deg); }
 }
 
-#message-area {
+#message-area, #duel-message-area, #conquest-message-area {
     position: absolute;
     bottom: 2rem;
     font-size: 1.5rem;
@@ -254,9 +258,10 @@ h1 {
     text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
     transition: opacity 0.3s;
     opacity: 0;
+    pointer-events: none;
 }
 
-#message-area.show {
+#message-area.show, #duel-message-area.show, #conquest-message-area.show {
     opacity: 1;
 }
 
@@ -303,7 +308,7 @@ h1 {
     color: var(--text-color);
 }
 
-#limit-val {
+#limit-val, #memory-time-val {
     color: var(--accent-color);
     font-size: 1.5rem;
     font-weight: 900;
@@ -418,4 +423,1003 @@ h1 {
     transform: translateY(4px);
     box-shadow: 0 2px 0 #545b62, 0 4px 5px rgba(0,0,0,0.2);
 }
+
+/* --- Game Mode & Class Selection Styles --- */
+.mode-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    max-width: 320px;
+    margin: 0 auto;
+}
+
+.mode-btn {
+    width: 100%;
+    font-size: 1.3rem;
+    padding: 1.2rem 2rem;
+}
+
+/* --- Duel Screen Layout --- */
+.duel-layout {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    width: 95%;
+    max-width: 1200px;
+    margin-top: 60px;
+    flex-grow: 1;
+}
+
+/* Player Scorecard styling */
+.player-card {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 2rem 1.5rem;
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.player-avatar {
+    font-size: 3.5rem;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+    transition: transform 0.3s ease;
+}
+
+.player-name {
+    font-size: 1.2rem;
+    font-weight: 900;
+    text-align: center;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+.player-score {
+    font-size: 3.5rem;
+    font-weight: 900;
+    line-height: 1;
+    color: var(--accent-color);
+    text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.active-badge {
+    position: absolute;
+    top: -12px;
+    background: var(--accent-color);
+    color: #2b2d42;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 900;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+/* Active Player Card states */
+#player1-card.active {
+    border-color: var(--player1-color);
+    background: rgba(78, 205, 196, 0.15);
+    box-shadow: 0 0 25px rgba(78, 205, 196, 0.35), 0 8px 32px rgba(0, 0, 0, 0.3);
+    transform: scale(1.05);
+}
+
+#player1-card.active .player-avatar {
+    transform: scale(1.1) rotate(-5deg);
+}
+
+#player1-card.active .active-badge {
+    background: var(--player1-color);
+    color: white;
+    opacity: 1;
+    transform: scale(1);
+}
+
+#player2-card.active {
+    border-color: var(--player2-color);
+    background: rgba(255, 107, 107, 0.15);
+    box-shadow: 0 0 25px rgba(255, 107, 107, 0.35), 0 8px 32px rgba(0, 0, 0, 0.3);
+    transform: scale(1.05);
+}
+
+#player2-card.active .player-avatar {
+    transform: scale(1.1) rotate(5deg);
+}
+
+#player2-card.active .active-badge {
+    background: var(--player2-color);
+    color: white;
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Turn display indicator in header */
+.turn-indicator {
+    font-size: 1.4rem;
+    font-weight: 900;
+    padding: 0.4rem 1.5rem;
+    border-radius: 30px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    box-shadow: inset 0 2px 4px rgba(255,255,255,0.1);
+    transition: all 0.3s ease;
+}
+
+.turn-p1 {
+    color: var(--player1-color);
+    text-shadow: 0 0 8px rgba(78, 205, 196, 0.5);
+    background: rgba(78, 205, 196, 0.1);
+    border-color: rgba(78, 205, 196, 0.3);
+}
+
+.turn-p2 {
+    color: var(--player2-color);
+    text-shadow: 0 0 8px rgba(255, 107, 107, 0.5);
+    background: rgba(255, 107, 107, 0.1);
+    border-color: rgba(255, 107, 107, 0.3);
+}
+
+/* --- Memory Board Grid --- */
+#duel-board-container {
+    perspective: 1000px;
+}
+
+#duel-board {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: inset 0 4px 20px rgba(0,0,0,0.4);
+}
+
+/* --- Card Flipping Structure --- */
+.card {
+    width: 80px;
+    height: 100px;
+    perspective: 1000px;
+    cursor: pointer;
+}
+
+.card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+    transform-style: preserve-3d;
+}
+
+.card.flipped .card-inner {
+    transform: rotateY(180deg);
+}
+
+.card-front, .card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Card Back (Face Down) */
+.card-back {
+    background: linear-gradient(135deg, #1f2d3d, #0d1520);
+    color: var(--accent-color);
+    font-size: 2.2rem;
+    font-weight: 900;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    box-shadow: 
+        inset 0 0 15px rgba(255, 230, 109, 0.1),
+        0 4px 8px rgba(0, 0, 0, 0.4);
+    transition: background 0.3s, transform 0.2s;
+    border: 2px solid rgba(255, 255, 255, 0.05);
+}
+
+.card:hover:not(.flipped):not(.captured) .card-inner {
+    transform: translateY(-4px) scale(1.03);
+}
+
+.card:hover:not(.flipped):not(.captured) .card-back {
+    background: linear-gradient(135deg, #2a3c52, #142132);
+    box-shadow: 
+        inset 0 0 15px rgba(255, 230, 109, 0.25),
+        0 8px 16px rgba(0, 0, 0, 0.5);
+}
+
+/* Card Front (Face Up) */
+.card-front {
+    background: var(--tile-bg);
+    color: var(--tile-text);
+    font-size: 1.1rem;
+    font-weight: 900;
+    transform: rotateY(180deg);
+    border: 2px solid #ffffff;
+}
+
+/* Captured Card States */
+.card.captured {
+    cursor: default;
+    pointer-events: none;
+}
+
+.card.captured.p1-captured .card-front {
+    background: var(--player1-color);
+    color: white;
+    border-color: var(--player1-color);
+    box-shadow: 0 0 12px rgba(78, 205, 196, 0.4);
+    animation: capturePulseP1 0.5s ease-out;
+}
+
+.card.captured.p2-captured .card-front {
+    background: var(--player2-color);
+    color: white;
+    border-color: var(--player2-color);
+    box-shadow: 0 0 12px rgba(255, 107, 107, 0.4);
+    animation: capturePulseP2 0.5s ease-out;
+}
+
+@keyframes capturePulseP1 {
+    0% { transform: rotateY(180deg) scale(1); }
+    50% { transform: rotateY(180deg) scale(1.15); box-shadow: 0 0 25px var(--player1-color); }
+    100% { transform: rotateY(180deg) scale(1); }
+}
+
+@keyframes capturePulseP2 {
+    0% { transform: rotateY(180deg) scale(1); }
+    50% { transform: rotateY(180deg) scale(1.15); box-shadow: 0 0 25px var(--player2-color); }
+    100% { transform: rotateY(180deg) scale(1); }
+}
+
+/* Wrong Match State */
+.card.wrong-match .card-front {
+    border-color: #ff3333;
+    background: #ffcccc;
+    animation: cardShake 0.4s;
+}
+
+@keyframes cardShake {
+    0%, 100% { transform: rotateY(180deg) translateX(0); }
+    20%, 60% { transform: rotateY(180deg) translateX(-6px) rotate(-1deg); }
+    40%, 80% { transform: rotateY(180deg) translateX(6px) rotate(1deg); }
+}
+
+/* --- Duel Win Screen Styles --- */
+.duel-win-scores {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin: 2rem 0;
+    width: 100%;
+}
+
+.final-score-block {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 15px;
+    padding: 1.5rem;
+    width: 160px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.final-score-block.p1 {
+    border-color: rgba(78, 205, 196, 0.3);
+}
+.final-score-block.p2 {
+    border-color: rgba(255, 107, 107, 0.3);
+}
+
+.final-score-label {
+    font-size: 1rem;
+    font-weight: bold;
+    color: rgba(255,255,255,0.7);
+}
+
+.final-score-val {
+    font-size: 3rem;
+    font-weight: 900;
+    color: var(--accent-color);
+}
+
+/* Responsive Rules for Duel Screen */
+@media (max-width: 900px) {
+    .duel-layout {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .player-card {
+        flex-direction: row;
+        width: 90%;
+        max-width: 400px;
+        padding: 0.8rem 1.5rem;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .player-avatar {
+        font-size: 2rem;
+    }
+    
+    .player-score {
+        font-size: 2rem;
+    }
+    
+    .active-badge {
+        position: relative;
+        top: 0;
+    }
+    
+    #duel-board {
+        gap: 8px;
+        padding: 10px;
+    }
+    
+    .card {
+        width: 55px;
+        height: 75px;
+    }
+    
+    .card-front {
+        font-size: 0.85rem;
+    }
+    
+    .card-back {
+        font-size: 1.5rem;
+    }
+}
+
+/* --- Connect-4 Math Conquest (Szám-Hódítók) Styles --- */
+.conquest-layout {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    width: 95%;
+    max-width: 1200px;
+    margin-top: 60px;
+    flex-grow: 1;
+}
+
+#conquest-board-container {
+    perspective: 1000px;
+}
+
+#conquest-board {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: inset 0 4px 20px rgba(0,0,0,0.4);
+}
+
+.conquest-tile {
+    width: 80px;
+    height: 80px;
+    background: var(--tile-bg);
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 8px;
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: var(--tile-text);
+    box-shadow: 
+        1px 1px 0 #e6e6e6,
+        2px 2px 0 #d9d9d9,
+        3px 3px 0 #cccccc,
+        4px 4px 0 #bfbfbf,
+        5px 5px 0 #b3b3b3,
+        6px 6px 10px rgba(0,0,0,0.4);
+    cursor: pointer;
+    transition: transform 0.2s, background-color 0.2s, box-shadow 0.2s, border-color 0.2s;
+    border: 2px solid #ffffff;
+}
+
+.conquest-tile:hover {
+    transform: translateY(-2px) translateX(-2px);
+    background: #f0f8ff;
+    box-shadow: 
+        1px 1px 0 #e6e6e6,
+        2px 2px 0 #d9d9d9,
+        3px 3px 0 #cccccc,
+        4px 4px 0 #bfbfbf,
+        5px 5px 0 #b3b3b3,
+        7px 7px 12px rgba(0,0,0,0.5);
+}
+
+/* Selected Conquest Tile States */
+.conquest-tile.selected-p1 {
+    border-color: var(--player1-color);
+    box-shadow: 0 0 15px var(--player1-color), 3px 3px 10px rgba(0,0,0,0.4);
+    transform: translateY(-2px) translateX(-2px) scale(1.05);
+}
+
+.conquest-tile.selected-p2 {
+    border-color: var(--player2-color);
+    box-shadow: 0 0 15px var(--player2-color), 3px 3px 10px rgba(0,0,0,0.4);
+    transform: translateY(-2px) translateX(-2px) scale(1.05);
+}
+
+/* Claimed Conquest Tile States */
+.conquest-tile.claimed-p1 {
+    background: var(--player1-color);
+    color: white;
+    border-color: var(--player1-color);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    cursor: default;
+    pointer-events: none;
+    transform: scale(1);
+    animation: popInConquest 0.4s ease-out;
+}
+
+.conquest-tile.claimed-p2 {
+    background: var(--player2-color);
+    color: white;
+    border-color: var(--player2-color);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    cursor: default;
+    pointer-events: none;
+    transform: scale(1);
+    animation: popInConquest 0.4s ease-out;
+}
+
+@keyframes popInConquest {
+    0% { transform: scale(0.7); opacity: 0.5; }
+    50% { transform: scale(1.15); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Wrong Match Conquest State */
+.conquest-tile.wrong-match {
+    border-color: #ff3333;
+    background: #ffcccc;
+    animation: conquestTileShake 0.4s;
+}
+
+@keyframes conquestTileShake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px) rotate(-1deg); }
+    40%, 80% { transform: translateX(6px) rotate(1deg); }
+}
+
+/* Winning Line Highlight */
+.conquest-tile.winning-line {
+    animation: winningPulse 1.2s infinite alternate;
+    z-index: 10;
+}
+
+@keyframes winningPulse {
+    0% { box-shadow: 0 0 10px #ffe66d, inset 0 0 5px #ffe66d; transform: scale(1); }
+    100% { box-shadow: 0 0 25px #ffe66d, inset 0 0 15px #ffe66d; transform: scale(1.08); border-color: #ffe66d; }
+}
+
+.conquest-win-scores {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin: 2rem 0;
+    width: 100%;
+}
+
+/* Responsive Conquest Screen Layout */
+@media (max-width: 900px) {
+    .conquest-layout {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    #conquest-board {
+        gap: 8px;
+        padding: 10px;
+    }
+    
+    .conquest-tile {
+        width: 55px;
+        height: 55px;
+        font-size: 0.85rem;
+    }
+}
+
+/* ==========================================
+   Matematikai Kaland (Math Race) Styles
+   ========================================== */
+
+.race-content-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+    width: 100%;
+    margin-top: 75px;
+    min-height: 0;
+    gap: 0.5rem;
+}
+
+.race-layout {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0.5rem auto;
+}
+
+#race-board-container {
+    background: rgba(255, 255, 255, 0.05);
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 16px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+}
+
+#race-board {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: repeat(6, 1fr);
+    gap: 10px;
+    width: 480px;
+    height: 480px;
+    position: relative;
+}
+
+.race-tile {
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    color: white;
+    font-weight: 900;
+    font-size: 1.1rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.25s ease;
+}
+
+/* Special tiles styling */
+.race-tile.tile-start {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    border-color: #2ecc71;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.race-tile.tile-finish {
+    background: linear-gradient(135deg, #f1c40f, #f39c12);
+    border-color: #f1c40f;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.race-tile.tile-rocket {
+    background: linear-gradient(135deg, #3498db, #1d72b8);
+    border-color: #3498db;
+    color: white;
+}
+
+.race-tile.tile-swamp {
+    background: linear-gradient(135deg, #e67e22, #b55d14);
+    border-color: #e67e22;
+    color: white;
+}
+
+.race-tile .tile-number {
+    position: absolute;
+    top: 4px;
+    left: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    opacity: 0.6;
+}
+
+.race-tile .tile-icon {
+    font-size: 1.4rem;
+    margin-top: 4px;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+
+/* Tokens display container */
+.race-tile .token-container {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    bottom: 6px;
+    width: 100%;
+    height: 24px;
+    pointer-events: none;
+}
+
+.player-token {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+    transform: scale(1);
+    animation: tokenSpawn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes tokenSpawn {
+    0% { transform: scale(0); }
+    100% { transform: scale(1); }
+}
+
+.player-token.p1-token {
+    background-color: var(--player1-color);
+    box-shadow: 0 0 8px var(--player1-color);
+}
+
+.player-token.p2-token {
+    background-color: var(--player2-color);
+    box-shadow: 0 0 8px var(--player2-color);
+}
+
+/* Question Panel Styling */
+.race-question-panel {
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    border-radius: 24px;
+    padding: 1.5rem;
+    max-width: 500px;
+    width: 90%;
+    margin: 1.5rem auto;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(10px);
+    animation: raceSlideUp 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+@keyframes raceSlideUp {
+    0% { transform: translateY(20px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+
+.question-header {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 0.8rem;
+    color: #eee;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.question-body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.question-text {
+    font-size: 2.4rem;
+    font-weight: 900;
+    color: white;
+    text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+.race-input {
+    width: 100px;
+    font-size: 2.2rem;
+    font-weight: 900;
+    padding: 4px 12px;
+    border-radius: 14px;
+    border: 3px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.1);
+    color: white;
+    text-align: center;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.race-input:focus {
+    border-color: var(--accent-color);
+    background: rgba(255,255,255,0.15);
+    box-shadow: 0 0 12px rgba(255, 230, 109, 0.3);
+}
+
+/* Hide spin-buttons */
+.race-input::-webkit-outer-spin-button,
+.race-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.race-input[type=number] {
+    -moz-appearance: textfield;
+}
+
+/* Responsive adjustments for Math Race */
+@media (max-width: 900px) {
+    .race-layout {
+        flex-direction: column;
+        gap: 1rem;
+        margin: 0.5rem auto;
+    }
+    
+    #race-board-container {
+        padding: 10px;
+        border-radius: 18px;
+    }
+    
+    #race-board {
+        width: 320px;
+        height: 320px;
+        gap: 6px;
+    }
+    
+    .race-tile {
+        font-size: 0.85rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .race-tile .tile-number {
+        font-size: 0.65rem;
+        top: 2px;
+        left: 5px;
+    }
+    
+    .race-tile .tile-icon {
+        font-size: 1rem;
+        margin-top: 2px;
+    }
+    
+    .race-tile .token-container {
+        bottom: 4px;
+        height: 16px;
+        gap: 2px;
+    }
+    
+    .player-token {
+        width: 12px;
+        height: 12px;
+        border-width: 1px;
+    }
+    
+    .question-text {
+        font-size: 1.8rem;
+    }
+    
+    .race-input {
+        width: 80px;
+        font-size: 1.6rem;
+        padding: 2px 8px;
+    }
+}
+
+#race-message-area {
+    font-size: 1.3rem;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    height: 1.5rem;
+    margin-top: 0.5rem;
+    text-align: center;
+}
+
+@media (max-height: 820px) {
+    .race-content-container {
+        margin-top: 65px;
+        gap: 0.25rem;
+    }
+
+    .race-layout {
+        gap: 1rem;
+        margin: 0.5rem auto;
+    }
+
+    .player-card {
+        padding: 1rem;
+        width: 160px;
+        gap: 0.5rem;
+    }
+
+    .player-avatar {
+        font-size: 2.2rem;
+    }
+
+    .player-name {
+        font-size: 1rem;
+    }
+
+    .player-score {
+        font-size: 2.2rem;
+    }
+
+    #race-board-container {
+        padding: 10px;
+        border-radius: 18px;
+    }
+
+    #race-board {
+        width: 340px;
+        height: 340px;
+        gap: 6px;
+    }
+
+    .race-tile {
+        font-size: 0.85rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .race-tile .tile-number {
+        font-size: 0.65rem;
+        top: 2px;
+        left: 5px;
+    }
+
+    .race-tile .tile-icon {
+        font-size: 1rem;
+        margin-top: 2px;
+    }
+
+    .race-tile .token-container {
+        bottom: 4px;
+        height: 16px;
+        gap: 2px;
+    }
+
+    .player-token {
+        width: 12px;
+        height: 12px;
+        border-width: 1px;
+    }
+
+    .race-question-panel {
+        padding: 0.8rem 1.2rem;
+        margin: 0.4rem auto;
+        border-radius: 18px;
+        max-width: 440px;
+    }
+
+    .question-header {
+        font-size: 1rem;
+        margin-bottom: 0.4rem;
+    }
+
+    .question-text {
+        font-size: 1.8rem;
+    }
+
+    .race-input {
+        width: 80px;
+        font-size: 1.6rem;
+        padding: 2px 8px;
+        border-radius: 10px;
+    }
+}
+
+@media (max-height: 680px) {
+    .race-content-container {
+        margin-top: 55px;
+        gap: 0.1rem;
+    }
+
+    .race-layout {
+        gap: 0.5rem;
+        margin: 0.2rem auto;
+    }
+
+    .player-card {
+        padding: 0.5rem;
+        width: 130px;
+        gap: 0.25rem;
+    }
+
+    .player-avatar {
+        font-size: 1.6rem;
+    }
+
+    .player-name {
+        font-size: 0.85rem;
+    }
+
+    .player-score {
+        font-size: 1.6rem;
+    }
+
+    #race-board-container {
+        padding: 6px;
+        border-radius: 12px;
+    }
+
+    #race-board {
+        width: 270px;
+        height: 270px;
+        gap: 4px;
+    }
+
+    .race-tile {
+        font-size: 0.75rem;
+        border-radius: 6px;
+        border-width: 1px;
+    }
+
+    .race-tile .tile-number {
+        font-size: 0.55rem;
+        top: 1px;
+        left: 3px;
+    }
+
+    .race-tile .tile-icon {
+        font-size: 0.8rem;
+        margin-top: 0px;
+    }
+
+    .race-tile .token-container {
+        bottom: 2px;
+        height: 12px;
+        gap: 1px;
+    }
+
+    .player-token {
+        width: 10px;
+        height: 10px;
+        border-width: 1px;
+    }
+
+    .race-question-panel {
+        padding: 0.5rem 1rem;
+        margin: 0.2rem auto;
+        border-radius: 12px;
+        max-width: 360px;
+    }
+
+    .question-header {
+        font-size: 0.85rem;
+        margin-bottom: 0.2rem;
+    }
+
+    .question-text {
+        font-size: 1.4rem;
+    }
+
+    .race-input {
+        width: 70px;
+        font-size: 1.3rem;
+        padding: 1px 6px;
+        border-radius: 8px;
+        border-width: 2px;
+    }
+}
+
+
+
+
 

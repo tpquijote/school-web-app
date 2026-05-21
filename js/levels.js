@@ -3,7 +3,8 @@
 // Global settings for 2nd Grade
 window.grade2Settings = {
     limit: 100,
-    ops: ['+', '-', '*', '/'] // default all operations
+    ops: ['+', '-', '*', '/'], // default all operations
+    memoryTime: 2.0 // default memory flip-back time
 };
 
 // Helper functions to generate random numbers
