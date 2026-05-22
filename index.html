@@ -25,35 +25,61 @@
 
         <!-- Settings Screen (2nd Grade Configuration) -->
         <div id="settings-screen" class="screen">
-            <div class="menu-content settings-content">
+            <div class="menu-content" style="max-width: 500px; width: 90%;">
                 <h1>Beállítások</h1>
                 <p class="subtitle">Szabd testre a feladatokat!</p>
                 
-                <div class="settings-group">
-                    <label for="limit-slider" class="settings-label">
-                        Számkör limit: <span id="limit-val">100</span>
-                    </label>
-                    <div class="slider-container">
-                        <input type="range" id="limit-slider" min="10" max="100" step="10" value="100" class="modern-slider">
+                <div class="settings-scroll-area">
+                    <div class="settings-group">
+                        <label for="limit-slider" class="settings-label">
+                            Számkör limit: <span id="limit-val">100</span>
+                        </label>
+                        <div class="slider-container">
+                            <input type="range" id="limit-slider" min="10" max="100" step="10" value="100" class="modern-slider">
+                        </div>
                     </div>
-                </div>
 
-                <div class="settings-group">
-                    <span class="settings-label">Műveletek:</span>
-                    <div class="ops-selectors">
-                        <button class="op-toggle-btn active" data-op="+">+</button>
-                        <button class="op-toggle-btn active" data-op="-">-</button>
-                        <button class="op-toggle-btn active" data-op="*">×</button>
-                        <button class="op-toggle-btn active" data-op="/">÷</button>
+                    <div class="settings-group">
+                        <span class="settings-label">Műveletek:</span>
+                        <div class="ops-selectors">
+                            <button class="op-toggle-btn active" data-op="+">+</button>
+                            <button class="op-toggle-btn active" data-op="-">-</button>
+                            <button class="op-toggle-btn active" data-op="*">×</button>
+                            <button class="op-toggle-btn active" data-op="/">÷</button>
+                        </div>
                     </div>
-                </div>
 
-                <div class="settings-group" id="memory-time-group" style="display: none;">
-                    <label for="memory-time-slider" class="settings-label">
-                        Kártyák mutatási ideje: <span id="memory-time-val">2.0</span> mp
-                    </label>
-                    <div class="slider-container">
-                        <input type="range" id="memory-time-slider" min="0.5" max="5.0" step="0.5" value="2.0" class="modern-slider">
+                    <div class="settings-group" id="memory-time-group" style="display: none;">
+                        <label for="memory-time-slider" class="settings-label">
+                            Kártyák mutatási ideje: <span id="memory-time-val">2.0</span> mp
+                        </label>
+                        <div class="slider-container">
+                            <input type="range" id="memory-time-slider" min="0.5" max="5.0" step="0.5" value="2.0" class="modern-slider">
+                        </div>
+                    </div>
+
+                    <div class="settings-group" id="conquest-options-group" style="display: none;">
+                        <span class="settings-label">Időlimit:</span>
+                        <label class="switch-container">
+                            <input type="checkbox" id="conquest-timer-enable" class="switch-input">
+                            <span class="switch-slider"></span>
+                        </label>
+                        <div id="conquest-timer-slider-container" style="display: none; width: 100%; margin-top: 10px;">
+                            <label for="conquest-timer-slider" class="settings-label">
+                                Köridő limit: <span id="conquest-timer-val">30</span> mp
+                            </label>
+                            <div class="slider-container">
+                                <input type="range" id="conquest-timer-slider" min="10" max="60" step="5" value="30" class="modern-slider">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-group" id="race-options-group" style="display: none;">
+                        <span class="settings-label">Tábla tájolása:</span>
+                        <div class="orientation-selectors" style="display: flex; gap: 10px; margin-top: 8px; width: 100%;">
+                            <button id="orientation-wide-btn" class="orientation-btn active" style="flex: 1; padding: 10px; font-weight: 700; border-radius: 12px;">Fekvő (8×6)</button>
+                            <button id="orientation-tall-btn" class="orientation-btn" style="flex: 1; padding: 10px; font-weight: 700; border-radius: 12px;">Álló (6×8)</button>
+                        </div>
                     </div>
                 </div>
 
@@ -130,22 +156,35 @@
                     <span id="conquest-pairs-left">Hátralévő helyek: 36</span>
                 </div>
                 <div id="conquest-turn-display" class="turn-indicator">Kék Játékos jön</div>
-                <button id="conquest-back-btn" class="btn small-btn">Vissza</button>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button id="conquest-pass-btn" class="btn small-btn secondary-btn">Passz</button>
+                    <button id="conquest-back-btn" class="btn small-btn">Vissza</button>
+                </div>
             </header>
+            
+            <!-- Conquest Timer and Lives bar -->
+            <div id="conquest-timer-container" class="conquest-timer-container" style="display: none;">
+                <div class="timer-bar-bg">
+                    <div id="conquest-timer-bar" class="timer-bar"></div>
+                </div>
+                <div id="conquest-timer-text" class="timer-text">30 másodperc</div>
+            </div>
             
             <div class="conquest-layout">
                 <!-- Player 1 Column -->
                 <div id="conquest-player1-card" class="player-card active">
                     <div class="player-avatar">🟦</div>
                     <div class="player-name">Kék Játékos</div>
-                    <div class="player-score" id="conquest-player1-score">0</div>
+                    <div class="conquest-player-lives player-lives" id="conquest-p1-lives">
+                        <!-- Hearts will be dynamically injected here -->
+                    </div>
                     <div class="active-badge">Aktív</div>
                 </div>
                 
                 <!-- Board Center -->
                 <div id="conquest-board-container">
                     <div id="conquest-board">
-                        <!-- 36 tiles will be dynamically injected here -->
+                        <!-- 36 Conquest slots will be dynamically injected here -->
                     </div>
                 </div>
                 
@@ -153,7 +192,9 @@
                 <div id="conquest-player2-card" class="player-card">
                     <div class="player-avatar">🟥</div>
                     <div class="player-name">Piros Játékos</div>
-                    <div class="player-score" id="conquest-player2-score">0</div>
+                    <div class="conquest-player-lives player-lives" id="conquest-p2-lives">
+                        <!-- Hearts will be dynamically injected here -->
+                    </div>
                     <div class="active-badge">Aktív</div>
                 </div>
             </div>
@@ -174,7 +215,7 @@
                 <div class="race-layout">
                     <!-- Player 1 Card -->
                     <div id="race-player1-card" class="player-card active">
-                        <div class="player-avatar">🟦</div>
+                        <div class="player-avatar"></div>
                         <div class="player-name">Kék Játékos</div>
                         <div class="player-score" id="race-player1-score">Mező: START</div>
                         <div class="active-badge">Aktív</div>
@@ -189,20 +230,48 @@
                     
                     <!-- Player 2 Card -->
                     <div id="race-player2-card" class="player-card">
-                        <div class="player-avatar">🟥</div>
+                        <div class="player-avatar"></div>
                         <div class="player-name">Piros Játékos</div>
                         <div class="player-score" id="race-player2-score">Mező: START</div>
                         <div class="active-badge">Aktív</div>
                     </div>
                 </div>
                 
-                <!-- Question Panel -->
+                <!-- Question & Dice Panel -->
                 <div id="race-question-panel" class="race-question-panel">
-                    <div class="question-header" id="race-question-header">Kék Játékos feladata:</div>
-                    <div class="question-body">
-                        <span class="question-text" id="race-question-text">5 + 4 = </span>
-                        <input type="number" id="race-answer-input" class="race-input" placeholder="?" min="0" max="999" autofocus>
-                        <button id="race-submit-btn" class="btn small-btn">Beküld</button>
+                    <div class="question-header" id="race-question-header">Kék Játékos következik</div>
+                    
+                    <!-- Dice section -->
+                    <div class="dice-container-row" style="display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 15px; margin: 8px 0;">
+                        <div class="dice-face" id="race-dice-face">
+                            <!-- Dots will be dynamically rendered here -->
+                        </div>
+                        <button id="race-roll-btn" class="btn small-btn">Kockadobás</button>
+                    </div>
+                    
+                    <!-- Math question section -->
+                    <div id="race-math-section" style="display: none;">
+                        <div class="question-body">
+                            <span class="question-text" id="race-question-text">5 + 4 = </span>
+                            <input type="number" id="race-answer-input" class="race-input" placeholder="?" min="0" max="999" inputmode="none" autofocus>
+                            <button id="race-submit-btn" class="btn small-btn">Beküld</button>
+                        </div>
+                        
+                        <!-- Custom On-screen Numeric Keypad -->
+                        <div class="custom-keypad" id="race-keypad">
+                            <button type="button" class="keypad-btn" data-val="1">1</button>
+                            <button type="button" class="keypad-btn" data-val="2">2</button>
+                            <button type="button" class="keypad-btn" data-val="3">3</button>
+                            <button type="button" class="keypad-btn" data-val="4">4</button>
+                            <button type="button" class="keypad-btn" data-val="5">5</button>
+                            <button type="button" class="keypad-btn" data-val="6">6</button>
+                            <button type="button" class="keypad-btn" data-val="7">7</button>
+                            <button type="button" class="keypad-btn" data-val="8">8</button>
+                            <button type="button" class="keypad-btn" data-val="9">9</button>
+                            <button type="button" class="keypad-btn action-btn" data-val="-">-</button>
+                            <button type="button" class="keypad-btn" data-val="0">0</button>
+                            <button type="button" class="keypad-btn action-btn" data-val="back">⌫</button>
+                        </div>
                     </div>
                 </div>
                 

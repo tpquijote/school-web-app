@@ -4,7 +4,9 @@
 window.grade2Settings = {
     limit: 100,
     ops: ['+', '-', '*', '/'], // default all operations
-    memoryTime: 2.0 // default memory flip-back time
+    memoryTime: 2.0, // default memory flip-back time
+    conquestTimerEnabled: false,
+    conquestTimerLimit: 30
 };
 
 // Helper functions to generate random numbers
