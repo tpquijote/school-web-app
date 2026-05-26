@@ -1752,6 +1752,18 @@ h1 {
     transition: transform 0.15s ease-out, box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
+.dice-face.clickable {
+    cursor: pointer;
+}
+
+.dice-face.clickable:hover {
+    transform: scale(1.08);
+}
+
+.dice-face.clickable:active {
+    transform: scale(0.95);
+}
+
 .dice-face.p1-active {
     border-color: #4ecdc4;
     box-shadow: 

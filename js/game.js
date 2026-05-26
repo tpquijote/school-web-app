@@ -241,10 +241,14 @@ if (conquestPassBtn) {
     });
 }
 
-// Race Roll Button Listener
+// Race Roll Button & Dice Face Listeners
 const raceRollBtn = document.getElementById('race-roll-btn');
 if (raceRollBtn) {
     raceRollBtn.addEventListener('click', handleRaceDiceRoll);
+}
+const raceDiceFace = document.getElementById('race-dice-face');
+if (raceDiceFace) {
+    raceDiceFace.addEventListener('click', handleRaceDiceRoll);
 }
 
 // Play Again Listener
@@ -1947,7 +1951,10 @@ function showRaceDicePhase() {
     }
     
     // Show empty dice face (placeholder)
-    if (diceFace) renderDiceFace(diceFace, null);
+    if (diceFace) {
+        renderDiceFace(diceFace, null);
+        diceFace.classList.add('clickable');
+    }
     
     if (header) {
         const playerName = currentPlayer === 0 ? 'Kék Játékos' : 'Piros Játékos';
@@ -2004,7 +2011,10 @@ function handleRaceDiceRoll() {
     const rollBtn = document.getElementById('race-roll-btn');
     
     if (rollBtn) rollBtn.disabled = true;
-    if (diceFace) diceFace.classList.add('rolling');
+    if (diceFace) {
+        diceFace.classList.add('rolling');
+        diceFace.classList.remove('clickable');
+    }
     
     // Animate rolling for 700ms, flash random numbers
     let animFrames = 0;
