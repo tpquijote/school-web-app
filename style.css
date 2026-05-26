@@ -71,7 +71,7 @@ body {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.2);
     max-height: calc(100vh - 2rem);
-    overflow: hidden;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
 }
@@ -434,8 +434,8 @@ h1 {
     border-color: #5fe0d7;
 }
 
-/* Orientation settings selector buttons */
-.orientation-btn {
+/* Orientation & Player Count settings selector buttons */
+.orientation-btn, .player-count-btn, .tug-player-count-btn {
     font-family: 'Nunito', sans-serif;
     font-weight: 700;
     font-size: 1.1rem;
@@ -447,19 +447,19 @@ h1 {
     text-align: center;
 }
 
-.orientation-btn:hover {
+.orientation-btn:hover, .player-count-btn:hover, .tug-player-count-btn:hover {
     border-color: rgba(255, 255, 255, 0.5);
     transform: translateY(-1px);
 }
 
-.orientation-btn.active {
+.orientation-btn.active, .player-count-btn.active, .tug-player-count-btn.active {
     background: var(--secondary-color);
     color: white;
     border-color: var(--secondary-color);
     box-shadow: 0 0 15px rgba(78, 205, 196, 0.4), 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
-.orientation-btn.active:hover {
+.orientation-btn.active:hover, .player-count-btn.active:hover, .tug-player-count-btn.active:hover {
     background: #5fe0d7;
     border-color: #5fe0d7;
 }
@@ -489,11 +489,19 @@ h1 {
 
 /* --- Game Mode & Class Selection Styles --- */
 .mode-buttons {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 1.2rem;
-    max-width: 320px;
+    max-width: 680px;
     margin: 0 auto;
+    width: 100%;
+}
+
+@media (max-width: 580px) {
+    .mode-buttons {
+        grid-template-columns: 1fr;
+        max-width: 320px;
+    }
 }
 
 .mode-btn {
@@ -1973,6 +1981,928 @@ h1 {
         border-radius: 5px;
     }
 }
+
+/* Kötélhúzás (Tug of War) Styles */
+.tug-content-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    width: 100%;
+    max-width: 1200px;
+    margin: 60px auto 0 auto;
+    padding: 10px 20px;
+    height: calc(100vh - 80px);
+    overflow: hidden;
+}
+
+.tug-arena {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 20px;
+    padding: 15px 25px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    margin-bottom: 10px;
+}
+
+.tug-rope-track {
+    position: relative;
+    height: 50px;
+    background: rgba(0, 0, 0, 0.35);
+    border-radius: 25px;
+    display: flex;
+    align-items: center;
+    padding: 0 40px;
+    margin: 10px 0;
+    border: 2px solid rgba(255, 255, 255, 0.08);
+    overflow: visible;
+}
+
+.tug-rope-line {
+    position: absolute;
+    left: 40px;
+    right: 40px;
+    height: 8px;
+    background: linear-gradient(90deg, var(--player1-color) 0%, #a07855 35%, #a07855 65%, var(--player2-color) 100%);
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+}
+
+.tug-rope-flag {
+    position: absolute;
+    top: -16px;
+    left: 50%;
+    width: 20px;
+    height: 40px;
+    transform: translateX(-50%);
+    transition: left 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 5;
+}
+
+.tug-flag-knot {
+    width: 14px;
+    height: 14px;
+    background: #ffe66d;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #ffe66d, 0 2px 4px rgba(0,0,0,0.5);
+    margin-top: 5px;
+}
+
+.tug-flag-ribbon {
+    width: 6px;
+    height: 24px;
+    background: #ff4757;
+    border-radius: 2px;
+    box-shadow: 0 2px 6px rgba(255, 71, 87, 0.6);
+    transform: rotate(15deg);
+    transform-origin: top center;
+    animation: ribbonSway 2s ease-in-out infinite alternate;
+}
+
+@keyframes ribbonSway {
+    0% { transform: rotate(10deg); }
+    100% { transform: rotate(25deg); }
+}
+
+.tug-track-nodes {
+    position: absolute;
+    left: 40px;
+    right: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+    pointer-events: none;
+}
+
+.tug-node {
+    width: 10px;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.tug-node.win-left, .tug-node.win-right {
+    background: transparent;
+    font-size: 1.3rem;
+    width: 24px;
+    height: 24px;
+}
+
+.tug-node.center-node {
+    background: transparent;
+    font-size: 1.2rem;
+    width: 24px;
+    height: 24px;
+}
+
+.tug-node.active-node {
+    background: #ffe66d;
+    box-shadow: 0 0 10px #ffe66d;
+    transform: scale(1.4);
+}
+
+.tug-rope-labels {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0 5px;
+}
+
+.team-label {
+    font-weight: 900;
+    font-size: 1rem;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.team-label.blue-team {
+    color: var(--player1-color);
+}
+
+.team-label.red-team {
+    color: var(--player2-color);
+}
+
+/* Player Panels Layout */
+.tug-players-container {
+    display: flex;
+    gap: 15px;
+    flex: 1;
+    height: calc(100vh - 210px);
+    min-height: 380px;
+    justify-content: center;
+    align-items: stretch;
+}
+
+.tug-players-container .tug-player-card {
+    flex: 1;
+    max-width: 550px;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
+.tug-player-card {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.tug-player-card.p1-card {
+    border-color: rgba(78, 205, 196, 0.15);
+}
+
+.tug-player-card.p2-card {
+    border-color: rgba(255, 107, 107, 0.15);
+}
+
+.tug-player-card.p3-card {
+    border-color: rgba(255, 230, 109, 0.15);
+}
+
+.tug-player-card.p4-card {
+    border-color: rgba(29, 209, 161, 0.15);
+}
+
+.tug-player-card.p1-card.active-pull {
+    border-color: var(--player1-color);
+    box-shadow: 0 0 30px rgba(78, 205, 196, 0.25), 0 8px 32px rgba(0, 0, 0, 0.35);
+    background: rgba(78, 205, 196, 0.08);
+}
+
+.tug-player-card.p2-card.active-pull {
+    border-color: var(--player2-color);
+    box-shadow: 0 0 30px rgba(255, 107, 107, 0.25), 0 8px 32px rgba(0, 0, 0, 0.35);
+    background: rgba(255, 107, 107, 0.08);
+}
+
+.tug-player-card.p3-card.active-pull {
+    border-color: #ffe66d;
+    box-shadow: 0 0 30px rgba(255, 230, 109, 0.25), 0 8px 32px rgba(0, 0, 0, 0.35);
+    background: rgba(255, 230, 109, 0.08);
+}
+
+.tug-player-card.p4-card.active-pull {
+    border-color: #1dd1a1;
+    box-shadow: 0 0 30px rgba(29, 209, 161, 0.25), 0 8px 32px rgba(0, 0, 0, 0.35);
+    background: rgba(29, 209, 161, 0.08);
+}
+
+.tug-player-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.06);
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+}
+
+.tug-player-name {
+    font-weight: 900;
+    font-size: 1.2rem;
+    letter-spacing: 0.3px;
+}
+
+.p1-card .tug-player-name { color: var(--player1-color); }
+.p2-card .tug-player-name { color: var(--player2-color); }
+.p3-card .tug-player-name { color: #ffe66d; }
+.p4-card .tug-player-name { color: #1dd1a1; }
+
+.tug-player-score {
+    font-weight: 700;
+    font-size: 1rem;
+    opacity: 0.85;
+}
+
+/* Equations Queue Visuals */
+.tug-equation-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    margin-bottom: 12px;
+    flex: 0.8;
+    min-height: 110px;
+}
+
+.tug-eq-preview {
+    font-size: 1.1rem;
+    font-weight: 700;
+    opacity: 0.15;
+    filter: blur(0.5px);
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.tug-eq-active {
+    font-size: 2.4rem;
+    font-weight: 900;
+    text-align: center;
+    color: #ffffff;
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    letter-spacing: 0.5px;
+    padding: 5px 0;
+    transition: transform 0.2s ease;
+}
+
+/* Input Fields */
+.tug-input-row {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
+.tug-input-field {
+    width: 100%;
+    max-width: 150px;
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 900;
+    background: rgba(0, 0, 0, 0.35);
+    border: 2px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+    color: #ffffff;
+    padding: 4px;
+    outline: none;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.p1-card .tug-input-field {
+    border-color: rgba(78, 205, 196, 0.3);
+}
+
+.p2-card .tug-input-field {
+    border-color: rgba(255, 107, 107, 0.3);
+}
+
+.p1-card.active-pull .tug-input-field {
+    border-color: var(--player1-color);
+    box-shadow: 0 0 10px rgba(78, 205, 196, 0.3), inset 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.p2-card.active-pull .tug-input-field {
+    border-color: var(--player2-color);
+    box-shadow: 0 0 10px rgba(255, 107, 107, 0.3), inset 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.tug-input-field.error-shake {
+    border-color: #ff6b6b !important;
+    box-shadow: 0 0 15px rgba(255, 107, 107, 0.6) !important;
+    animation: shakeAnim 0.4s ease-in-out;
+    color: #ff6b6b;
+}
+
+.tug-input-field.penalty-lock {
+    opacity: 0.5;
+    background: rgba(0, 0, 0, 0.6);
+    cursor: not-allowed;
+}
+
+/* Keypad styling */
+.tug-keypad {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    width: 100%;
+    max-width: 280px;
+    margin-top: auto;
+}
+
+.tug-key {
+    font-size: 1.3rem;
+    font-weight: 900;
+    background: rgba(255,255,255,0.06);
+    border: 2px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    color: #ffffff;
+    padding: 8px 0;
+    cursor: pointer;
+    transition: all 0.1s ease, border-color 0.2s ease, background 0.2s ease;
+    outline: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.25);
+    min-height: 44px;
+}
+
+.tug-key:active:not(:disabled) {
+    transform: translateY(3px);
+    box-shadow: none;
+}
+
+.tug-key.action-key {
+    background: rgba(255, 255, 255, 0.12);
+    font-size: 1.2rem;
+}
+
+.tug-key.submit-key {
+    grid-column: span 4;
+    background: #ffe66d;
+    color: #2b2d42;
+    border-color: #ffe66d;
+    box-shadow: 0 3px 0 #ccb857;
+    text-transform: uppercase;
+    font-size: 1.25rem;
+    font-weight: 900;
+    padding: 6px 0;
+}
+
+.tug-key.submit-key:active:not(:disabled) {
+    transform: translateY(3px);
+    box-shadow: none;
+}
+
+.p1-card .tug-key:hover:not(.submit-key):not(:disabled) {
+    background: rgba(78, 205, 196, 0.12);
+    border-color: var(--player1-color);
+}
+
+.p2-card .tug-key:hover:not(.submit-key):not(:disabled) {
+    background: rgba(255, 107, 107, 0.12);
+    border-color: var(--player2-color);
+}
+
+.p3-card .tug-key:hover:not(.submit-key):not(:disabled) {
+    background: rgba(255, 230, 109, 0.12);
+    border-color: #ffe66d;
+}
+
+.p4-card .tug-key:hover:not(.submit-key):not(:disabled) {
+    background: rgba(29, 209, 161, 0.12);
+    border-color: #1dd1a1;
+}
+
+.tug-key.submit-key:hover:not(:disabled) {
+    filter: brightness(1.08);
+}
+
+.tug-key:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.25) !important;
+}
+
+.tug-key.empty-key {
+    opacity: 0;
+    pointer-events: none;
+    box-shadow: none;
+    border: none;
+    background: transparent;
+}
+
+
+/* Height based scaling for smaller heights */
+@media (max-height: 820px) {
+    .tug-content-container {
+        margin-top: 55px;
+        padding: 5px 15px;
+    }
+    
+    .tug-arena {
+        padding: 8px 15px;
+        margin-bottom: 5px;
+    }
+    
+    .tug-rope-track {
+        height: 42px;
+        margin: 5px 0;
+    }
+    
+    .tug-rope-flag {
+        top: -12px;
+        height: 32px;
+    }
+    
+    .tug-flag-ribbon {
+        height: 20px;
+    }
+    
+    .tug-players-container {
+        gap: 10px;
+        height: calc(100vh - 170px);
+        min-height: 320px;
+    }
+    
+    .tug-player-card {
+        padding: 10px 12px;
+        border-radius: 12px;
+    }
+    
+    .tug-eq-active {
+        font-size: 2rem;
+        padding: 2px 0;
+    }
+    
+    .tug-input-field {
+        font-size: 1.6rem;
+        border-radius: 10px;
+        max-width: 120px;
+        padding: 2px;
+    }
+    
+    .tug-keypad {
+        gap: 5px;
+    }
+    
+    .tug-key {
+        font-size: 1.1rem;
+        padding: 6px 0;
+        border-radius: 8px;
+        min-height: 36px;
+    }
+    
+    .tug-key.submit-key {
+        font-size: 1.1rem;
+        padding: 4px 0;
+    }
+}
+
+@media (max-height: 680px) {
+    .tug-players-container {
+        height: calc(100vh - 150px);
+        min-height: 260px;
+    }
+    
+    .tug-eq-active {
+        font-size: 1.6rem;
+    }
+    
+    .tug-input-field {
+        font-size: 1.3rem;
+        max-width: 100px;
+        border-radius: 8px;
+    }
+    
+    .tug-keypad {
+        gap: 4px;
+    }
+    
+    .tug-key {
+        font-size: 0.95rem;
+        padding: 4px 0;
+        border-radius: 6px;
+        min-height: 30px;
+        border-width: 1px;
+    }
+    
+    .tug-key.submit-key {
+        font-size: 0.95rem;
+        padding: 3px 0;
+    }
+}
+
+/* ==========================================================================
+   Autóverseny (Car Race) Game Mode Styles
+   ========================================================================== */
+
+#car-race-screen {
+    display: none;
+    flex-direction: column;
+    height: 100vh;
+    padding: 10px 20px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+#car-race-screen.active {
+    display: flex;
+}
+
+.car-race-content-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: calc(100vh - 70px);
+    overflow: hidden;
+    gap: 15px;
+}
+
+/* Shared Race Track Arena */
+.car-race-track-arena {
+    background: rgba(18, 18, 18, 0.7);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    position: relative;
+    box-shadow: inset 0 4px 15px rgba(0, 0, 0, 0.5);
+    min-height: 120px;
+}
+
+.car-race-lane {
+    display: flex;
+    align-items: center;
+    height: 38px;
+    position: relative;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    border-left: 5px solid #ffe66d; /* starting line colored yellow */
+    padding-left: 10px;
+}
+
+.car-race-lane:not(:last-of-type) {
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.12);
+}
+
+.lane-label {
+    font-weight: 900;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 1.1rem;
+    width: 25px;
+    user-select: none;
+}
+
+.car-track-line {
+    position: relative;
+    flex: 1;
+    height: 100%;
+    margin-right: 50px; /* leave space for checkered flag */
+}
+
+.car-avatar {
+    position: absolute;
+    left: 0%;
+    top: 50%;
+    transform: translateY(-50%) translate3d(0, 0, 0);
+    font-size: 2.2rem;
+    transition: left 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+    z-index: 2;
+    user-select: none;
+}
+
+.car-avatar.spin-out {
+    animation: carSpinOut 0.4s linear infinite;
+}
+
+@keyframes carSpinOut {
+    0% { transform: translateY(-50%) rotate(0deg); }
+    100% { transform: translateY(-50%) rotate(360deg); }
+}
+
+.car-race-finish-line {
+    position: absolute;
+    right: 15px;
+    top: 10px;
+    bottom: 10px;
+    width: 32px;
+    background: repeating-conic-gradient(#000 0% 25%, #fff 0% 50%) 0% 0%/8px 8px;
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    z-index: 1;
+}
+
+/* Rotated card utility */
+.rotated-card {
+    transform: rotate(180deg);
+}
+
+/* Adaptive Players Grid via Rows */
+.car-race-players-row {
+    display: flex;
+    gap: 15px;
+    flex: 1;
+    height: calc(100vh - 210px);
+    min-height: 350px;
+    width: 100%;
+    justify-content: center;
+    align-items: stretch;
+    overflow: hidden;
+}
+
+.car-race-players-row .car-player-card {
+    flex: 1;
+    max-width: 550px;
+    height: auto;
+    max-height: 360px;
+    width: 100%;
+}
+
+/* Player Cards */
+.car-player-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.car-player-card.p1-card { border-color: rgba(78, 205, 196, 0.15); }
+.car-player-card.p2-card { border-color: rgba(255, 107, 107, 0.15); }
+.car-player-card.p3-card { border-color: rgba(255, 230, 109, 0.15); }
+.car-player-card.p4-card { border-color: rgba(29, 209, 161, 0.15); }
+
+.car-player-card.p1-card.active-pull {
+    border-color: var(--player1-color);
+    box-shadow: 0 0 25px rgba(78, 205, 196, 0.2), 0 8px 32px rgba(0, 0, 0, 0.35);
+    background: rgba(78, 205, 196, 0.06);
+}
+.car-player-card.p2-card.active-pull {
+    border-color: var(--player2-color);
+    box-shadow: 0 0 25px rgba(255, 107, 107, 0.2), 0 8px 32px rgba(0, 0, 0, 0.35);
+    background: rgba(255, 107, 107, 0.06);
+}
+.car-player-card.p3-card.active-pull {
+    border-color: #ffe66d;
+    box-shadow: 0 0 25px rgba(255, 230, 109, 0.2), 0 8px 32px rgba(0, 0, 0, 0.35);
+    background: rgba(255, 230, 109, 0.06);
+}
+.car-player-card.p4-card.active-pull {
+    border-color: #1dd1a1;
+    box-shadow: 0 0 25px rgba(29, 209, 161, 0.2), 0 8px 32px rgba(0, 0, 0, 0.35);
+    background: rgba(29, 209, 161, 0.06);
+}
+
+.car-player-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: nowrap;
+    overflow: hidden;
+    width: 100%;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.06);
+    padding-bottom: 6px;
+    margin-bottom: 8px;
+}
+
+.car-player-name {
+    font-weight: 900;
+    font-size: 1.1rem;
+    letter-spacing: 0.3px;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+
+.p1-card .car-player-name { color: var(--player1-color); }
+.p2-card .car-player-name { color: var(--player2-color); }
+.p3-card .car-player-name { color: #ffe66d; }
+.p4-card .car-player-name { color: #1dd1a1; }
+
+.car-player-score {
+    font-weight: 700;
+    font-size: 0.95rem;
+    opacity: 0.85;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-left: 6px;
+}
+
+.car-equation-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin-bottom: 6px;
+    flex: 1;
+    min-height: 50px;
+}
+
+.car-eq-active {
+    font-size: 2.2rem;
+    font-weight: 900;
+    text-align: center;
+    color: #ffffff;
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    letter-spacing: 0.5px;
+    transition: transform 0.2s ease;
+}
+
+/* Input Fields */
+.car-input-row {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 8px;
+}
+
+.car-input-field {
+    width: 100%;
+    max-width: 120px;
+    text-align: center;
+    font-size: 1.8rem;
+    font-weight: 900;
+    background: rgba(0, 0, 0, 0.35);
+    border: 2px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    color: #ffffff;
+    padding: 3px;
+    outline: none;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+    transition: all 0.2s ease;
+}
+
+.p1-card .car-input-field { border-color: rgba(78, 205, 196, 0.3); }
+.p2-card .car-input-field { border-color: rgba(255, 107, 107, 0.3); }
+.p3-card .car-input-field { border-color: rgba(255, 230, 109, 0.3); }
+.p4-card .car-input-field { border-color: rgba(29, 209, 161, 0.3); }
+
+.p1-card.active-pull .car-input-field { border-color: var(--player1-color); box-shadow: 0 0 10px rgba(78, 205, 196, 0.3), inset 0 2px 4px rgba(0,0,0,0.5); }
+.p2-card.active-pull .car-input-field { border-color: var(--player2-color); box-shadow: 0 0 10px rgba(255, 107, 107, 0.3), inset 0 2px 4px rgba(0,0,0,0.5); }
+.p3-card.active-pull .car-input-field { border-color: #ffe66d; box-shadow: 0 0 10px rgba(255, 230, 109, 0.3), inset 0 2px 4px rgba(0,0,0,0.5); }
+.p4-card.active-pull .car-input-field { border-color: #1dd1a1; box-shadow: 0 0 10px rgba(29, 209, 161, 0.3), inset 0 2px 4px rgba(0,0,0,0.5); }
+
+.car-input-field.error-shake {
+    border-color: #ff6b6b !important;
+    box-shadow: 0 0 15px rgba(255, 107, 107, 0.6) !important;
+    animation: shakeAnim 0.4s ease-in-out;
+    color: #ff6b6b;
+}
+
+.car-input-field.penalty-lock {
+    opacity: 0.5;
+    background: rgba(0, 0, 0, 0.6);
+    cursor: not-allowed;
+}
+
+/* Keypad styling */
+.car-keypad {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    width: 100%;
+    max-width: 250px;
+    margin-top: auto;
+}
+
+.car-key {
+    font-size: 1.15rem;
+    font-weight: 900;
+    background: rgba(255,255,255,0.06);
+    border: 2px solid rgba(255,255,255,0.12);
+    border-radius: 8px;
+    color: #ffffff;
+    padding: 6px 0;
+    cursor: pointer;
+    transition: all 0.1s ease, border-color 0.2s ease, background 0.2s ease;
+    outline: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.25);
+    min-height: 38px;
+}
+
+.car-key:active:not(:disabled) {
+    transform: translateY(3px);
+    box-shadow: none;
+}
+
+.car-key.action-key {
+    background: rgba(255, 255, 255, 0.12);
+    font-size: 1.1rem;
+}
+
+.car-key.submit-key {
+    grid-column: span 4;
+    background: #ffe66d;
+    color: #2b2d42;
+    border-color: #ffe66d;
+    box-shadow: 0 3px 0 #ccb857;
+    text-transform: uppercase;
+    font-size: 1.15rem;
+    font-weight: 900;
+    padding: 5px 0;
+}
+
+.car-key.submit-key:active:not(:disabled) {
+    transform: translateY(3px);
+    box-shadow: none;
+}
+
+.p1-card .car-key:hover:not(.submit-key):not(:disabled) { background: rgba(78, 205, 196, 0.12); border-color: var(--player1-color); }
+.p2-card .car-key:hover:not(.submit-key):not(:disabled) { background: rgba(255, 107, 107, 0.12); border-color: var(--player2-color); }
+.p3-card .car-key:hover:not(.submit-key):not(:disabled) { background: rgba(255, 230, 109, 0.12); border-color: #ffe66d; }
+.p4-card .car-key:hover:not(.submit-key):not(:disabled) { background: rgba(29, 209, 161, 0.12); border-color: #1dd1a1; }
+
+.car-key.submit-key:hover:not(:disabled) {
+    filter: brightness(1.08);
+}
+
+.car-key:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.25) !important;
+}
+
+/* Height-based scaling for 3/4 Players or smaller viewport heights */
+@media (max-height: 820px) {
+    .car-race-content-container { gap: 10px; }
+    .car-race-track-arena { min-height: 100px; padding: 6px; }
+    .car-race-lane { height: 32px; }
+    .car-avatar { font-size: 1.8rem; }
+    
+    .car-player-card { padding: 8px 10px; border-radius: 12px; }
+    .car-player-header { margin-bottom: 4px; padding-bottom: 4px; }
+    .car-eq-active { font-size: 1.8rem; }
+    .car-input-field { font-size: 1.5rem; max-width: 100px; padding: 1px; border-radius: 8px; }
+    
+    .car-keypad { gap: 4px; }
+    .car-key { font-size: 1.05rem; padding: 4px 0; border-radius: 6px; min-height: 32px; border-width: 1px; }
+    .car-key.submit-key { font-size: 1.05rem; padding: 3px 0; }
+}
+
+@media (max-height: 680px) {
+    .car-race-content-container { gap: 6px; }
+    .car-race-track-arena { min-height: 80px; padding: 4px; }
+    .car-race-lane { height: 26px; }
+    .car-avatar { font-size: 1.5rem; }
+    
+    .car-player-card { padding: 6px 8px; border-radius: 8px; }
+    .car-player-header { margin-bottom: 2px; padding-bottom: 2px; }
+    .car-player-name { font-size: 0.95rem; }
+    .car-player-score { font-size: 0.85rem; }
+    
+    .car-eq-active { font-size: 1.4rem; }
+    .car-input-field { font-size: 1.25rem; max-width: 80px; padding: 0px; border-radius: 6px; border-width: 1px; }
+    
+    .car-keypad { gap: 3px; }
+    .car-key { font-size: 0.9rem; padding: 3px 0; border-radius: 4px; min-height: 26px; box-shadow: 0 2px 0 rgba(0,0,0,0.2); }
+    .car-key.submit-key { font-size: 0.9rem; padding: 2px 0; box-shadow: 0 2px 0 #ccb857; }
+    
+    .car-key:active:not(:disabled) { transform: translateY(2px); }
+    .car-key.submit-key:active:not(:disabled) { transform: translateY(2px); }
+}
+
+
 
 
 

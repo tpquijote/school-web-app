@@ -19,6 +19,8 @@
                     <button class="btn mode-btn secondary-btn" id="duel-mode-btn" data-mode="duel">Szám-Memória Párbaj</button>
                     <button class="btn mode-btn" id="conquest-mode-btn" data-mode="conquest" style="background: #ff9f1c; box-shadow: 0 6px 0 #cc7f16;">Szám-Hódítók (Connect-4)</button>
                     <button class="btn mode-btn" id="race-mode-btn" data-mode="race" style="background: #a29bfe; box-shadow: 0 6px 0 #6c5ce7;">Matematikai Kaland (Társasjáték)</button>
+                    <button class="btn mode-btn" id="tug-mode-btn" data-mode="tug" style="background: #00b4d8; box-shadow: 0 6px 0 #0077b6;">Kötélhúzás (Speed-Matek)</button>
+                    <button class="btn mode-btn" id="car-race-mode-btn" data-mode="carRace" style="background: #fdcb6e; box-shadow: 0 6px 0 #e1b12c;">Autóverseny (Speed-Párbaj)</button>
                 </div>
             </div>
         </div>
@@ -79,6 +81,23 @@
                         <div class="orientation-selectors" style="display: flex; gap: 10px; margin-top: 8px; width: 100%;">
                             <button id="orientation-wide-btn" class="orientation-btn active" style="flex: 1; padding: 10px; font-weight: 700; border-radius: 12px;">Fekvő (8×6)</button>
                             <button id="orientation-tall-btn" class="orientation-btn" style="flex: 1; padding: 10px; font-weight: 700; border-radius: 12px;">Álló (6×8)</button>
+                        </div>
+                    </div>
+
+                    <div class="settings-group" id="tug-options-group" style="display: none;">
+                        <span class="settings-label">Játékosok száma:</span>
+                        <div class="tug-player-count-selectors" style="display: flex; gap: 10px; margin-top: 8px; width: 100%;">
+                            <button type="button" class="tug-player-count-btn active" data-count="2" style="flex: 1; padding: 10px; font-weight: 700; border-radius: 12px;">2 Játékos</button>
+                            <button type="button" class="tug-player-count-btn" data-count="4" style="flex: 1; padding: 10px; font-weight: 700; border-radius: 12px;">4 Játékos</button>
+                        </div>
+                    </div>
+
+                    <div class="settings-group" id="car-race-options-group" style="display: none;">
+                        <span class="settings-label">Játékosok száma:</span>
+                        <div class="player-count-selectors" style="display: flex; gap: 10px; margin-top: 8px; width: 100%;">
+                            <button type="button" class="player-count-btn active" data-count="2" style="flex: 1; padding: 10px; font-weight: 700; border-radius: 12px;">2 Játékos</button>
+                            <button type="button" class="player-count-btn" data-count="3" style="flex: 1; padding: 10px; font-weight: 700; border-radius: 12px;">3 Játékos</button>
+                            <button type="button" class="player-count-btn" data-count="4" style="flex: 1; padding: 10px; font-weight: 700; border-radius: 12px;">4 Játékos</button>
                         </div>
                     </div>
                 </div>
@@ -279,6 +298,200 @@
             </div>
         </div>
 
+        <!-- Tug of War Screen -->
+        <div id="tug-screen" class="screen">
+            <header class="game-header">
+                <div class="stats">
+                    <span id="tug-grade-display">Kötélhúzás</span>
+                </div>
+                <button id="tug-back-btn" class="btn small-btn">Vissza</button>
+            </header>
+            
+            <div class="tug-content-container">
+                <!-- Tug of War Arena (Rope visual) -->
+                <div class="tug-arena">
+                    <div class="tug-rope-track">
+                        <!-- Rope line -->
+                        <div class="tug-rope-line" id="tug-rope-line">
+                            <!-- Left flag anchor -->
+                            <div class="tug-rope-flag" id="tug-rope-flag">
+                                <div class="tug-flag-ribbon"></div>
+                                <div class="tug-flag-knot"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Track node ticks -->
+                        <div class="tug-track-nodes">
+                            <div class="tug-node win-left" data-pos="-4">🏆</div>
+                            <div class="tug-node" data-pos="-3"></div>
+                            <div class="tug-node" data-pos="-2"></div>
+                            <div class="tug-node" data-pos="-1"></div>
+                            <div class="tug-node center-node" data-pos="0">📍</div>
+                            <div class="tug-node" data-pos="1"></div>
+                            <div class="tug-node" data-pos="2"></div>
+                            <div class="tug-node" data-pos="3"></div>
+                            <div class="tug-node win-right" data-pos="4">🏆</div>
+                        </div>
+                    </div>
+                    <div class="tug-rope-labels">
+                        <span class="team-label blue-team" id="tug-left-team-label">🔵 KÉK JÁTÉKOS</span>
+                        <span class="team-label red-team" id="tug-right-team-label">PIROS JÁTÉKOS 🔴</span>
+                    </div>
+                </div>
+
+                <!-- Players Container (Single Row, normal orientation) -->
+                <div class="tug-players-container" id="tug-players-container">
+                    <!-- Blue Player (Player 1) -->
+                    <div class="tug-player-card p1-card" id="tug-p1-card">
+                        <div class="tug-player-header">
+                            <span class="tug-player-name">🔵 Kék Játékos</span>
+                            <span class="tug-player-score" id="tug-p1-score">Kérdés: 1</span>
+                        </div>
+                        
+                        <div class="tug-equation-display">
+                            <div class="tug-eq-preview prev" id="tug-p1-eq-prev">-</div>
+                            <div class="tug-eq-active" id="tug-p1-eq-active">-- + --</div>
+                            <div class="tug-eq-preview next" id="tug-p1-eq-next">-</div>
+                        </div>
+                        
+                        <div class="tug-input-row">
+                            <input type="text" id="tug-p1-input" class="tug-input-field" placeholder="?" readonly>
+                        </div>
+                        
+                        <div class="tug-keypad" id="tug-p1-keypad">
+                            <button type="button" class="tug-key" data-val="1">1</button>
+                            <button type="button" class="tug-key" data-val="2">2</button>
+                            <button type="button" class="tug-key" data-val="3">3</button>
+                            <button type="button" class="tug-key action-key" data-val="back">⌫</button>
+                            
+                            <button type="button" class="tug-key" data-val="4">4</button>
+                            <button type="button" class="tug-key" data-val="5">5</button>
+                            <button type="button" class="tug-key" data-val="6">6</button>
+                            <button type="button" class="tug-key action-key" data-val="-">-</button>
+                            
+                            <button type="button" class="tug-key" data-val="7">7</button>
+                            <button type="button" class="tug-key" data-val="8">8</button>
+                            <button type="button" class="tug-key" data-val="9">9</button>
+                            <button type="button" class="tug-key" data-val="0">0</button>
+                            
+                            <button type="button" class="tug-key action-key submit-key" data-val="ok">Ok</button>
+                        </div>
+                    </div>
+
+                    <!-- Yellow Player (Player 3) -->
+                    <div class="tug-player-card p3-card" id="tug-p3-card" style="display: none;">
+                        <div class="tug-player-header">
+                            <span class="tug-player-name">🟨 Sárga Játékos</span>
+                            <span class="tug-player-score" id="tug-p3-score">Kérdés: 1</span>
+                        </div>
+                        
+                        <div class="tug-equation-display">
+                            <div class="tug-eq-preview prev" id="tug-p3-eq-prev">-</div>
+                            <div class="tug-eq-active" id="tug-p3-eq-active">-- + --</div>
+                            <div class="tug-eq-preview next" id="tug-p3-eq-next">-</div>
+                        </div>
+                        
+                        <div class="tug-input-row">
+                            <input type="text" id="tug-p3-input" class="tug-input-field" placeholder="?" readonly>
+                        </div>
+                        
+                        <div class="tug-keypad" id="tug-p3-keypad">
+                            <button type="button" class="tug-key" data-val="1">1</button>
+                            <button type="button" class="tug-key" data-val="2">2</button>
+                            <button type="button" class="tug-key" data-val="3">3</button>
+                            <button type="button" class="tug-key action-key" data-val="back">⌫</button>
+                            
+                            <button type="button" class="tug-key" data-val="4">4</button>
+                            <button type="button" class="tug-key" data-val="5">5</button>
+                            <button type="button" class="tug-key" data-val="6">6</button>
+                            <button type="button" class="tug-key action-key" data-val="-">-</button>
+                            
+                            <button type="button" class="tug-key" data-val="7">7</button>
+                            <button type="button" class="tug-key" data-val="8">8</button>
+                            <button type="button" class="tug-key" data-val="9">9</button>
+                            <button type="button" class="tug-key" data-val="0">0</button>
+                            
+                            <button type="button" class="tug-key action-key submit-key" data-val="ok">Ok</button>
+                        </div>
+                    </div>
+
+                    <!-- Red Player (Player 2) -->
+                    <div class="tug-player-card p2-card" id="tug-p2-card">
+                        <div class="tug-player-header">
+                            <span class="tug-player-name">🟥 Piros Játékos</span>
+                            <span class="tug-player-score" id="tug-p2-score">Kérdés: 1</span>
+                        </div>
+                        
+                        <div class="tug-equation-display">
+                            <div class="tug-eq-preview prev" id="tug-p2-eq-prev">-</div>
+                            <div class="tug-eq-active" id="tug-p2-eq-active">-- + --</div>
+                            <div class="tug-eq-preview next" id="tug-p2-eq-next">-</div>
+                        </div>
+                        
+                        <div class="tug-input-row">
+                            <input type="text" id="tug-p2-input" class="tug-input-field" placeholder="?" readonly>
+                        </div>
+                        
+                        <div class="tug-keypad" id="tug-p2-keypad">
+                            <button type="button" class="tug-key" data-val="1">1</button>
+                            <button type="button" class="tug-key" data-val="2">2</button>
+                            <button type="button" class="tug-key" data-val="3">3</button>
+                            <button type="button" class="tug-key action-key" data-val="back">⌫</button>
+                            
+                            <button type="button" class="tug-key" data-val="4">4</button>
+                            <button type="button" class="tug-key" data-val="5">5</button>
+                            <button type="button" class="tug-key" data-val="6">6</button>
+                            <button type="button" class="tug-key action-key" data-val="-">-</button>
+                            
+                            <button type="button" class="tug-key" data-val="7">7</button>
+                            <button type="button" class="tug-key" data-val="8">8</button>
+                            <button type="button" class="tug-key" data-val="9">9</button>
+                            <button type="button" class="tug-key" data-val="0">0</button>
+                            
+                            <button type="button" class="tug-key action-key submit-key" data-val="ok">Ok</button>
+                        </div>
+                    </div>
+
+                    <!-- Green Player (Player 4) -->
+                    <div class="tug-player-card p4-card" id="tug-p4-card" style="display: none;">
+                        <div class="tug-player-header">
+                            <span class="tug-player-name">🟩 Zöld Játékos</span>
+                            <span class="tug-player-score" id="tug-p4-score">Kérdés: 1</span>
+                        </div>
+                        
+                        <div class="tug-equation-display">
+                            <div class="tug-eq-preview prev" id="tug-p4-eq-prev">-</div>
+                            <div class="tug-eq-active" id="tug-p4-eq-active">-- + --</div>
+                            <div class="tug-eq-preview next" id="tug-p4-eq-next">-</div>
+                        </div>
+                        
+                        <div class="tug-input-row">
+                            <input type="text" id="tug-p4-input" class="tug-input-field" placeholder="?" readonly>
+                        </div>
+                        
+                        <div class="tug-keypad" id="tug-p4-keypad">
+                            <button type="button" class="tug-key" data-val="1">1</button>
+                            <button type="button" class="tug-key" data-val="2">2</button>
+                            <button type="button" class="tug-key" data-val="3">3</button>
+                            <button type="button" class="tug-key action-key" data-val="back">⌫</button>
+                            
+                            <button type="button" class="tug-key" data-val="4">4</button>
+                            <button type="button" class="tug-key" data-val="5">5</button>
+                            <button type="button" class="tug-key" data-val="6">6</button>
+                            <button type="button" class="tug-key action-key" data-val="-">-</button>
+                            
+                            <button type="button" class="tug-key" data-val="7">7</button>
+                            <button type="button" class="tug-key" data-val="8">8</button>
+                            <button type="button" class="tug-key" data-val="9">9</button>
+                            <button type="button" class="tug-key" data-val="0">0</button>
+                            
+                            <button type="button" class="tug-key action-key submit-key" data-val="ok">Ok</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Win Screen (Mahjong) -->
         <div id="win-screen" class="screen">
             <div class="menu-content">
@@ -348,6 +561,204 @@
                 <div class="win-actions">
                     <button id="race-play-again-btn" class="btn">Új játék</button>
                     <button id="race-win-back-to-menu-btn" class="btn secondary-btn">Főmenü</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tug Win Screen -->
+        <div id="tug-win-screen" class="screen">
+            <div class="menu-content">
+                <h1 id="tug-winner-title">Kötélhúzás Vége!</h1>
+                <p id="tug-winner-text">A Kék Játékos nyert!</p>
+                
+                <div class="win-actions">
+                    <button id="tug-play-again-btn" class="btn">Új játék</button>
+                    <button id="tug-win-back-to-menu-btn" class="btn secondary-btn">Főmenü</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Car Race Screen -->
+        <div id="car-race-screen" class="screen">
+            <header class="game-header">
+                <div class="stats">
+                    <span id="car-race-grade-display">Autóverseny - 2. Osztály</span>
+                </div>
+                <button id="car-race-back-btn" class="btn small-btn">Vissza</button>
+            </header>
+            
+            <div class="car-race-content-container">
+                <!-- Shared Race Track -->
+                <div class="car-race-track-arena" id="car-race-track-arena">
+                    <div class="car-race-lane lane-1" id="car-race-lane-1">
+                        <span class="lane-label">1</span>
+                        <div class="car-track-line">
+                            <div class="car-avatar p1-car" id="car-p1">🚙</div>
+                        </div>
+                    </div>
+                    <div class="car-race-lane lane-2" id="car-race-lane-2">
+                        <span class="lane-label">2</span>
+                        <div class="car-track-line">
+                            <div class="car-avatar p2-car" id="car-p2">🚗</div>
+                        </div>
+                    </div>
+                    <div class="car-race-lane lane-3" id="car-race-lane-3" style="display: none;">
+                        <span class="lane-label">3</span>
+                        <div class="car-track-line">
+                            <div class="car-avatar p3-car" id="car-p3">🚖</div>
+                        </div>
+                    </div>
+                    <div class="car-race-lane lane-4" id="car-race-lane-4" style="display: none;">
+                        <span class="lane-label">4</span>
+                        <div class="car-track-line">
+                            <div class="car-avatar p4-car" id="car-p4">🏎️</div>
+                        </div>
+                    </div>
+                    <div class="car-race-finish-line">🏁</div>
+                </div>
+
+                <!-- Players Row (Single row, normal orientation) -->
+                <div class="car-race-players-row" id="car-race-players-row">
+                    <!-- Player 1 (Blue) -->
+                    <div class="car-player-card p1-card" id="car-p1-card">
+                        <div class="car-player-header">
+                            <span class="car-player-name">🟦 Kék Játékos</span>
+                            <span class="car-player-score" id="car-p1-score">Kérdés: 1 / 10</span>
+                        </div>
+                        <div class="car-equation-display">
+                            <div class="car-eq-active" id="car-p1-eq-active">-- + --</div>
+                        </div>
+                        <div class="car-input-row">
+                            <input type="text" id="car-p1-input" class="car-input-field" placeholder="?" readonly>
+                        </div>
+                        <div class="car-keypad" id="car-p1-keypad">
+                            <button type="button" class="car-key" data-val="1">1</button>
+                            <button type="button" class="car-key" data-val="2">2</button>
+                            <button type="button" class="car-key" data-val="3">3</button>
+                            <button type="button" class="car-key action-key" data-val="back">⌫</button>
+                            
+                            <button type="button" class="car-key" data-val="4">4</button>
+                            <button type="button" class="car-key" data-val="5">5</button>
+                            <button type="button" class="car-key" data-val="6">6</button>
+                            <button type="button" class="car-key action-key" data-val="-">-</button>
+                            
+                            <button type="button" class="car-key" data-val="7">7</button>
+                            <button type="button" class="car-key" data-val="8">8</button>
+                            <button type="button" class="car-key" data-val="9">9</button>
+                            <button type="button" class="car-key" data-val="0">0</button>
+                            
+                            <button type="button" class="car-key action-key submit-key" data-val="ok">Ok</button>
+                        </div>
+                    </div>
+
+                    <!-- Player 2 (Red) -->
+                    <div class="car-player-card p2-card" id="car-p2-card">
+                        <div class="car-player-header">
+                            <span class="car-player-name">🟥 Piros Játékos</span>
+                            <span class="car-player-score" id="car-p2-score">Kérdés: 1 / 10</span>
+                        </div>
+                        <div class="car-equation-display">
+                            <div class="car-eq-active" id="car-p2-eq-active">-- + --</div>
+                        </div>
+                        <div class="car-input-row">
+                            <input type="text" id="car-p2-input" class="car-input-field" placeholder="?" readonly>
+                        </div>
+                        <div class="car-keypad" id="car-p2-keypad">
+                            <button type="button" class="car-key" data-val="1">1</button>
+                            <button type="button" class="car-key" data-val="2">2</button>
+                            <button type="button" class="car-key" data-val="3">3</button>
+                            <button type="button" class="car-key action-key" data-val="back">⌫</button>
+                            
+                            <button type="button" class="car-key" data-val="4">4</button>
+                            <button type="button" class="car-key" data-val="5">5</button>
+                            <button type="button" class="car-key" data-val="6">6</button>
+                            <button type="button" class="car-key action-key" data-val="-">-</button>
+                            
+                            <button type="button" class="car-key" data-val="7">7</button>
+                            <button type="button" class="car-key" data-val="8">8</button>
+                            <button type="button" class="car-key" data-val="9">9</button>
+                            <button type="button" class="car-key" data-val="0">0</button>
+                            
+                            <button type="button" class="car-key action-key submit-key" data-val="ok">Ok</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Player 3 (Yellow) -->
+                    <div class="car-player-card p3-card" id="car-p3-card" style="display: none;">
+                        <div class="car-player-header">
+                            <span class="car-player-name">🟨 Sárga Játékos</span>
+                            <span class="car-player-score" id="car-p3-score">Kérdés: 1 / 10</span>
+                        </div>
+                        <div class="car-equation-display">
+                            <div class="car-eq-active" id="car-p3-eq-active">-- + --</div>
+                        </div>
+                        <div class="car-input-row">
+                            <input type="text" id="car-p3-input" class="car-input-field" placeholder="?" readonly>
+                        </div>
+                        <div class="car-keypad" id="car-p3-keypad">
+                            <button type="button" class="car-key" data-val="1">1</button>
+                            <button type="button" class="car-key" data-val="2">2</button>
+                            <button type="button" class="car-key" data-val="3">3</button>
+                            <button type="button" class="car-key action-key" data-val="back">⌫</button>
+                            
+                            <button type="button" class="car-key" data-val="4">4</button>
+                            <button type="button" class="car-key" data-val="5">5</button>
+                            <button type="button" class="car-key" data-val="6">6</button>
+                            <button type="button" class="car-key action-key" data-val="-">-</button>
+                            
+                            <button type="button" class="car-key" data-val="7">7</button>
+                            <button type="button" class="car-key" data-val="8">8</button>
+                            <button type="button" class="car-key" data-val="9">9</button>
+                            <button type="button" class="car-key" data-val="0">0</button>
+                            
+                            <button type="button" class="car-key action-key submit-key" data-val="ok">Ok</button>
+                        </div>
+                    </div>
+
+                    <!-- Player 4 (Green) -->
+                    <div class="car-player-card p4-card" id="car-p4-card" style="display: none;">
+                        <div class="car-player-header">
+                            <span class="car-player-name">🟩 Zöld Játékos</span>
+                            <span class="car-player-score" id="car-p4-score">Kérdés: 1 / 10</span>
+                        </div>
+                        <div class="car-equation-display">
+                            <div class="car-eq-active" id="car-p4-eq-active">-- + --</div>
+                        </div>
+                        <div class="car-input-row">
+                            <input type="text" id="car-p4-input" class="car-input-field" placeholder="?" readonly>
+                        </div>
+                        <div class="car-keypad" id="car-p4-keypad">
+                            <button type="button" class="car-key" data-val="1">1</button>
+                            <button type="button" class="car-key" data-val="2">2</button>
+                            <button type="button" class="car-key" data-val="3">3</button>
+                            <button type="button" class="car-key action-key" data-val="back">⌫</button>
+                            
+                            <button type="button" class="car-key" data-val="4">4</button>
+                            <button type="button" class="car-key" data-val="5">5</button>
+                            <button type="button" class="car-key" data-val="6">6</button>
+                            <button type="button" class="car-key action-key" data-val="-">-</button>
+                            
+                            <button type="button" class="car-key" data-val="7">7</button>
+                            <button type="button" class="car-key" data-val="8">8</button>
+                            <button type="button" class="car-key" data-val="9">9</button>
+                            <button type="button" class="car-key" data-val="0">0</button>
+                            
+                            <button type="button" class="car-key action-key submit-key" data-val="ok">Ok</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Car Race Win Screen -->
+        <div id="car-race-win-screen" class="screen">
+            <div class="menu-content">
+                <h1 id="car-race-winner-title">Autóverseny Vége!</h1>
+                <p id="car-race-winner-text">A Kék Játékos nyert!</p>
+                
+                <div class="win-actions">
+                    <button id="car-race-play-again-btn" class="btn">Új játék</button>
+                    <button id="car-race-win-back-to-menu-btn" class="btn secondary-btn">Főmenü</button>
                 </div>
             </div>
         </div>

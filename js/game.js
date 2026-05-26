@@ -48,7 +48,11 @@ const screens = {
     win: document.getElementById('win-screen'),
     duelWin: document.getElementById('duel-win-screen'),
     conquestWin: document.getElementById('conquest-win-screen'),
-    raceWin: document.getElementById('race-win-screen')
+    raceWin: document.getElementById('race-win-screen'),
+    tug: document.getElementById('tug-screen'),
+    tugWin: document.getElementById('tug-win-screen'),
+    carRace: document.getElementById('car-race-screen'),
+    carRaceWin: document.getElementById('car-race-win-screen')
 };
 
 const gameBoard = document.getElementById('game-board');
@@ -114,6 +118,18 @@ document.querySelectorAll('.mode-btn').forEach(btn => {
         const raceOptionsGroup = document.getElementById('race-options-group');
         if (raceOptionsGroup) {
             raceOptionsGroup.style.display = (activeMode === 'race') ? 'flex' : 'none';
+        }
+        
+        // Show/hide tug options
+        const tugOptionsGroup = document.getElementById('tug-options-group');
+        if (tugOptionsGroup) {
+            tugOptionsGroup.style.display = (activeMode === 'tug') ? 'flex' : 'none';
+        }
+        
+        // Show/hide car race options
+        const carRaceOptionsGroup = document.getElementById('car-race-options-group');
+        if (carRaceOptionsGroup) {
+            carRaceOptionsGroup.style.display = (activeMode === 'carRace') ? 'flex' : 'none';
         }
         
         switchScreen('settings');
@@ -194,6 +210,10 @@ if (startGameBtn) {
             startConquest(2);
         } else if (activeMode === 'race') {
             startRace(2);
+        } else if (activeMode === 'tug') {
+            startTug(tugPlayerCount, 2);
+        } else if (activeMode === 'carRace') {
+            startCarRace(carRacePlayerCount, 2);
         }
     });
 }
@@ -206,6 +226,10 @@ document.getElementById('conquest-back-btn').addEventListener('click', () => {
     switchScreen('settings');
 });
 document.getElementById('race-back-btn').addEventListener('click', () => switchScreen('settings'));
+const tugBackBtn = document.getElementById('tug-back-btn');
+if (tugBackBtn) {
+    tugBackBtn.addEventListener('click', () => switchScreen('settings'));
+}
 if (settingsBackBtn) settingsBackBtn.addEventListener('click', showMainMenu);
 if (winBackToMenuBtn) winBackToMenuBtn.addEventListener('click', showMainMenu);
 document.getElementById('duel-win-back-to-menu-btn').addEventListener('click', showMainMenu);
@@ -214,6 +238,44 @@ document.getElementById('conquest-win-back-to-menu-btn').addEventListener('click
     showMainMenu();
 });
 document.getElementById('race-win-back-to-menu-btn').addEventListener('click', showMainMenu);
+const tugWinBackToMenuBtn = document.getElementById('tug-win-back-to-menu-btn');
+if (tugWinBackToMenuBtn) {
+    tugWinBackToMenuBtn.addEventListener('click', showMainMenu);
+}
+
+const carRaceBackBtn = document.getElementById('car-race-back-btn');
+if (carRaceBackBtn) {
+    carRaceBackBtn.addEventListener('click', () => switchScreen('settings'));
+}
+
+const carRaceWinBackToMenuBtn = document.getElementById('car-race-win-back-to-menu-btn');
+if (carRaceWinBackToMenuBtn) {
+    carRaceWinBackToMenuBtn.addEventListener('click', showMainMenu);
+}
+
+const carRacePlayAgainBtn = document.getElementById('car-race-play-again-btn');
+if (carRacePlayAgainBtn) {
+    carRacePlayAgainBtn.addEventListener('click', () => {
+        startCarRace(carRacePlayerCount, lastGradePlayed || 2);
+    });
+}
+
+document.querySelectorAll('.player-count-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.player-count-btn').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        carRacePlayerCount = parseInt(e.target.dataset.count) || 2;
+    });
+});
+
+document.querySelectorAll('.tug-player-count-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.tug-player-count-btn').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        tugPlayerCount = parseInt(e.target.dataset.count) || 2;
+    });
+});
+
 
 // Orientation toggle button listeners
 const orientationWideBtn = document.getElementById('orientation-wide-btn');
@@ -264,6 +326,12 @@ document.getElementById('conquest-play-again-btn').addEventListener('click', () 
 document.getElementById('race-play-again-btn').addEventListener('click', () => {
     startRace(2);
 });
+const tugPlayAgainBtn = document.getElementById('tug-play-again-btn');
+if (tugPlayAgainBtn) {
+    tugPlayAgainBtn.addEventListener('click', () => {
+        startTug(tugPlayerCount, lastGradePlayed || 2);
+    });
+}
 
 // Race Submit Event Listeners
 const raceSubmitBtn = document.getElementById('race-submit-btn');
@@ -2139,3 +2207,740 @@ function showRaceWin(winnerIndex) {
     
     switchScreen('raceWin');
 }
+
+// ==========================================
+// Kötélhúzás (Tug of War) Game Mode
+// ==========================================
+
+let tugPlayerCount = 2; // 2 or 4
+let tugRopePosition = 0; // -4 (blue win) to +4 (red win)
+let tugPlayerIndices = [0, 0, 0, 0];
+let tugPlayerInputs = ['', '', '', ''];
+let tugPlayerPenalties = [false, false, false, false];
+let tugQuestions = []; // array of objects with {q1, q2, q3, q4}
+let tugKeypadsInitialized = false;
+
+function startTug(playerCount, grade) {
+    tugPlayerCount = playerCount;
+    lastGradePlayed = grade;
+    currentLevel = levelSeeds[grade] || levelSeeds[2];
+    
+    const displayEl = document.getElementById('tug-grade-display');
+    if (displayEl) {
+        displayEl.textContent = `Kötélhúzás - ${currentLevel.name}`;
+    }
+    
+    // Reset State
+    tugRopePosition = 0;
+    tugPlayerIndices = [0, 0, 0, 0];
+    tugPlayerInputs = ['', '', '', ''];
+    tugPlayerPenalties = [false, false, false, false];
+    
+    // Reset Team Labels
+    const leftLabel = document.getElementById('tug-left-team-label');
+    const rightLabel = document.getElementById('tug-right-team-label');
+    if (leftLabel && rightLabel) {
+        if (playerCount === 4) {
+            leftLabel.textContent = '🔵 KÉK & SÁRGA (BAL)';
+            rightLabel.textContent = 'PIROS & ZÖLD (JOBB) 🔴';
+        } else {
+            leftLabel.textContent = '🔵 KÉK JÁTÉKOS';
+            rightLabel.textContent = 'PIROS JÁTÉKOS 🔴';
+        }
+    }
+    
+    // Clear inputs in UI and show/hide panels
+    for (let p = 1; p <= 4; p++) {
+        const inputEl = document.getElementById(`tug-p${p}-input`);
+        if (inputEl) {
+            inputEl.value = '';
+            inputEl.classList.remove('error-shake', 'penalty-lock');
+        }
+        
+        const card = document.getElementById(`tug-p${p}-card`);
+        if (card) {
+            card.classList.remove('active-pull');
+            card.style.display = (p === 1 || p === 2 || (playerCount === 4 && (p === 3 || p === 4))) ? 'flex' : 'none';
+        }
+    }
+    
+    // Set player count class on container (for CSS scaling overrides)
+    const tugPlayersContainer = document.getElementById('tug-players-container');
+    if (tugPlayersContainer) {
+        tugPlayersContainer.className = `tug-players-container players-${playerCount}`;
+    }
+    
+    // Pre-generate questions
+    tugQuestions = generateTugOfWarQuestions(grade);
+    
+    // Render first equations
+    renderTugEquations();
+    
+    // Reset rope display
+    updateRopeVisual();
+    
+    // Enable keypad keys
+    enableTugKeypads();
+    
+    // One-time initialization of keypad click handlers
+    if (!tugKeypadsInitialized) {
+        initTugKeypads();
+        tugKeypadsInitialized = true;
+    }
+    
+    switchScreen('tug');
+}
+
+function generateSingleTugQuestion(grade) {
+    let q;
+    if (grade === 1) {
+        // Addition/Subtraction up to 20
+        const isAdd = Math.random() > 0.5;
+        if (isAdd) {
+            const targetVal = getRandomInt(5, 20);
+            const a = getRandomInt(1, targetVal - 1);
+            q = { expr: `${a} + ${targetVal - a}`, answer: targetVal };
+        } else {
+            const targetVal = getRandomInt(1, 15);
+            const b = getRandomInt(1, 20 - targetVal);
+            q = { expr: `${targetVal + b} - ${b}`, answer: targetVal };
+        }
+    } else if (grade === 2) {
+        // Customizable settings
+        const limit = window.grade2Settings.limit;
+        const activeOps = window.grade2Settings.ops.length > 0 ? window.grade2Settings.ops : ['+'];
+        const op = activeOps[Math.floor(Math.random() * activeOps.length)];
+        
+        if (op === '+') {
+            const targetVal = getRandomInt(10, limit);
+            const a = getRandomInt(1, targetVal - 1);
+            q = { expr: `${a} + ${targetVal - a}`, answer: targetVal };
+        } else if (op === '-') {
+            const targetVal = getRandomInt(10, limit);
+            const b = getRandomInt(1, Math.max(1, limit - targetVal));
+            q = { expr: `${targetVal + b} - ${b}`, answer: targetVal };
+        } else if (op === '*') {
+            const maxVal = Math.min(10, limit);
+            const a = getRandomInt(2, maxVal);
+            const maxB = Math.floor(limit / a);
+            const b = getRandomInt(1, maxB || 1);
+            q = { expr: `${a} × ${b}`, answer: a * b };
+        } else if (op === '/') {
+            const maxDivisor = Math.min(10, limit);
+            const b = getRandomInt(2, maxDivisor || 2);
+            const maxTarget = Math.floor(limit / b);
+            const qVal = getRandomInt(1, maxTarget || 1);
+            q = { expr: `${qVal * b} ÷ ${b}`, answer: qVal };
+        }
+    } else if (grade === 3) {
+        const opType = Math.random();
+        if (opType < 0.35) {
+            const isAdd = Math.random() > 0.5;
+            if (isAdd) {
+                const targetVal = getRandomInt(100, 1000);
+                const a = getRandomInt(50, targetVal - 50);
+                q = { expr: `${a} + ${targetVal - a}`, answer: targetVal };
+            } else {
+                const targetVal = getRandomInt(100, 1000);
+                const b = getRandomInt(50, 1000 - targetVal);
+                q = { expr: `${targetVal + b} - ${b}`, answer: targetVal };
+            }
+        } else if (opType < 0.7) {
+            const a = getRandomInt(2, 10);
+            const b = getRandomInt(2, 10);
+            q = { expr: `${a} × ${b}`, answer: a * b };
+        } else {
+            const b = getRandomInt(2, 10);
+            const qVal = getRandomInt(2, 10);
+            q = { expr: `${qVal * b} ÷ ${b}`, answer: qVal };
+        }
+    } else {
+        const opType = Math.random();
+        if (opType < 0.35) {
+            const isAdd = Math.random() > 0.5;
+            if (isAdd) {
+                const targetVal = getRandomInt(1000, 10000);
+                const a = getRandomInt(100, targetVal - 100);
+                q = { expr: `${a} + ${targetVal - a}`, answer: targetVal };
+            } else {
+                const targetVal = getRandomInt(1000, 10000);
+                const b = getRandomInt(100, 10000 - targetVal);
+                q = { expr: `${targetVal + b} - ${b}`, answer: targetVal };
+            }
+        } else if (opType < 0.7) {
+            const a = getRandomInt(11, 50);
+            const b = getRandomInt(2, 9);
+            q = { expr: `${a} × ${b}`, answer: a * b };
+        } else {
+            const b = getRandomInt(2, 20);
+            const qVal = getRandomInt(10, 50);
+            q = { expr: `${qVal * b} ÷ ${b}`, answer: qVal };
+        }
+    }
+    
+    q.expr = q.expr.replace('*', '×').replace('/', '÷');
+    return q;
+}
+
+function generateTugOfWarQuestions(grade, count = 100) {
+    const questions = [];
+    for (let i = 0; i < count; i++) {
+        questions.push({
+            q1: generateSingleTugQuestion(grade),
+            q2: generateSingleTugQuestion(grade),
+            q3: generateSingleTugQuestion(grade),
+            q4: generateSingleTugQuestion(grade)
+        });
+    }
+    return questions;
+}
+
+function updateRopeVisual() {
+    const flag = document.getElementById('tug-rope-flag');
+    if (flag) {
+        const pct = 50 + (tugRopePosition * 12.5);
+        flag.style.left = `${pct}%`;
+    }
+    
+    const nodes = document.querySelectorAll('.tug-node');
+    nodes.forEach((node, idx) => {
+        if (idx === (tugRopePosition + 4)) {
+            node.classList.add('active-node');
+        } else {
+            node.classList.remove('active-node');
+        }
+    });
+}
+
+function renderTugEquations() {
+    const activePlayers = [1, 2];
+    if (tugPlayerCount === 4) {
+        activePlayers.push(3, 4);
+    }
+    
+    for (const p of activePlayers) {
+        const scoreEl = document.getElementById(`tug-p${p}-score`);
+        if (scoreEl) scoreEl.textContent = `Pont: ${tugPlayerIndices[p - 1]}`;
+        
+        const eqActive = document.getElementById(`tug-p${p}-eq-active`);
+        const eqPrev = document.getElementById(`tug-p${p}-eq-prev`);
+        const eqNext = document.getElementById(`tug-p${p}-eq-next`);
+        
+        const idx = tugPlayerIndices[p - 1];
+        const playerQKey = `q${p}`;
+        
+        if (tugQuestions[idx]) {
+            eqActive.textContent = tugQuestions[idx][playerQKey].expr;
+        } else {
+            eqActive.textContent = 'Kész!';
+        }
+        
+        if (idx > 0) {
+            const prevQ = tugQuestions[idx - 1][playerQKey];
+            eqPrev.textContent = `${prevQ.expr} = ${prevQ.answer} ✓`;
+            if (p === 1) eqPrev.style.color = 'var(--player1-color)';
+            else if (p === 2) eqPrev.style.color = 'var(--player2-color)';
+            else if (p === 3) eqPrev.style.color = '#ffe66d';
+            else if (p === 4) eqPrev.style.color = '#1dd1a1';
+        } else {
+            eqPrev.textContent = '-';
+            eqPrev.style.color = '';
+        }
+        
+        if (tugQuestions[idx + 1]) {
+            eqNext.textContent = tugQuestions[idx + 1][playerQKey].expr;
+        } else {
+            eqNext.textContent = '-';
+        }
+    }
+}
+
+function initTugKeypads() {
+    for (let p = 1; p <= 4; p++) {
+        const keys = document.querySelectorAll(`#tug-p${p}-keypad .tug-key`);
+        keys.forEach(key => {
+            key.addEventListener('click', () => {
+                if (tugPlayerPenalties[p - 1]) return;
+                const val = key.dataset.val;
+                handleTugInput(p, val);
+            });
+        });
+    }
+}
+
+function handleTugInput(playerNum, keyVal) {
+    const inputEl = document.getElementById(`tug-p${playerNum}-input`);
+    let inputStr = tugPlayerInputs[playerNum - 1];
+    
+    if (keyVal === 'back') {
+        inputStr = inputStr.slice(0, -1);
+    } else if (keyVal === '-') {
+        if (inputStr === '') {
+            inputStr = '-';
+        }
+    } else if (keyVal === 'ok') {
+        submitTugAnswer(playerNum);
+        return;
+    } else if (inputStr.length < 5) {
+        if (inputStr === '-' && keyVal === '0') {
+            // avoid negative zero
+        } else {
+            inputStr += keyVal;
+        }
+    }
+    tugPlayerInputs[playerNum - 1] = inputStr;
+    if (inputEl) inputEl.value = inputStr;
+    
+    const card = document.getElementById(`tug-p${playerNum}-card`);
+    if (inputStr !== '') {
+        card.classList.add('active-pull');
+    } else {
+        card.classList.remove('active-pull');
+    }
+}
+
+function submitTugAnswer(playerNum) {
+    let inputStr = tugPlayerInputs[playerNum - 1];
+    if (inputStr === '' || inputStr === '-') return;
+    
+    const idx = tugPlayerIndices[playerNum - 1];
+    const currentQ = tugQuestions[idx]?.[`q${playerNum}`];
+    if (!currentQ) return;
+    
+    const userVal = parseInt(inputStr);
+    if (userVal === currentQ.answer) {
+        tugPlayerIndices[playerNum - 1]++;
+        tugPlayerInputs[playerNum - 1] = '';
+        
+        // Move rope: P1 & P3 Team Blue (Left, towards -4)
+        // P2 & P4 Team Red (Right, towards +4)
+        if (playerNum === 1 || playerNum === 3) {
+            tugRopePosition = Math.max(-4, tugRopePosition - 1);
+        } else {
+            tugRopePosition = Math.min(4, tugRopePosition + 1);
+        }
+        updateRopeVisual();
+        
+        const inputEl = document.getElementById(`tug-p${playerNum}-input`);
+        if (inputEl) inputEl.value = '';
+        document.getElementById(`tug-p${playerNum}-card`).classList.remove('active-pull');
+        
+        renderTugEquations();
+        checkTugWin();
+    } else {
+        triggerTugError(playerNum);
+    }
+}
+
+function triggerTugError(playerNum) {
+    tugPlayerPenalties[playerNum - 1] = true;
+    const inputEl = document.getElementById(`tug-p${playerNum}-input`);
+    if (inputEl) {
+        inputEl.classList.add('error-shake', 'penalty-lock');
+    }
+    
+    const keys = document.querySelectorAll(`#tug-p${playerNum}-keypad .tug-key`);
+    keys.forEach(k => k.disabled = true);
+    
+    setTimeout(() => {
+        tugPlayerPenalties[playerNum - 1] = false;
+        tugPlayerInputs[playerNum - 1] = '';
+        if (inputEl) {
+            inputEl.value = '';
+            inputEl.classList.remove('error-shake', 'penalty-lock');
+        }
+        keys.forEach(k => k.disabled = false);
+        document.getElementById(`tug-p${playerNum}-card`).classList.remove('active-pull');
+    }, 1000);
+}
+
+function enableTugKeypads() {
+    const keys = document.querySelectorAll('.tug-key');
+    keys.forEach(k => k.disabled = false);
+}
+
+function checkTugWin() {
+    if (tugRopePosition === -4) {
+        showTugWin(0);
+    } else if (tugRopePosition === 4) {
+        showTugWin(1);
+    }
+}
+
+function showTugWin(winnerIndex) {
+    let winnerName = '';
+    if (winnerIndex === 0) {
+        winnerName = tugPlayerCount === 4 ? 'Kék & Sárga Csapat' : 'Kék Játékos';
+    } else {
+        winnerName = tugPlayerCount === 4 ? 'Piros & Zöld Csapat' : 'Piros Játékos';
+    }
+    
+    const titleEl = document.getElementById('tug-winner-title');
+    if (titleEl) {
+        titleEl.textContent = `${winnerName} Győzött!`;
+    }
+    
+    const textEl = document.getElementById('tug-winner-text');
+    if (textEl) {
+        textEl.textContent = `Gratulálok! Sikeresen áthúztad a kötelet a térfeledre!`;
+    }
+    
+    switchScreen('tugWin');
+}
+
+// ==========================================================================
+// Autóverseny (Car Race) Game Mode Core Logic
+// ==========================================================================
+
+let carRacePlayerCount = 2; // default is 2
+let carRacePlayerIndices = [0, 0, 0, 0]; // 0 to 10
+let carRaceQuestions = []; // array of 10 equations
+let carRacePlayerInputs = ['', '', '', ''];
+let carRacePlayerPenalties = [false, false, false, false];
+let carRaceKeypadsInitialized = false;
+
+function startCarRace(playerCount, grade) {
+    lastGradePlayed = grade;
+    currentLevel = levelSeeds[grade] || levelSeeds[2];
+    
+    const displayEl = document.getElementById('car-race-grade-display');
+    if (displayEl) {
+        displayEl.textContent = `Autóverseny - ${currentLevel.name}`;
+    }
+    
+    // Reset State
+    carRacePlayerIndices = [0, 0, 0, 0];
+    carRacePlayerInputs = ['', '', '', ''];
+    carRacePlayerPenalties = [false, false, false, false];
+    
+    // Clear inputs and error classes
+    for (let p = 1; p <= 4; p++) {
+        const inputEl = document.getElementById(`car-p${p}-input`);
+        if (inputEl) {
+            inputEl.value = '';
+            inputEl.classList.remove('error-shake', 'penalty-lock');
+        }
+        const card = document.getElementById(`car-p${p}-card`);
+        if (card) {
+            card.classList.remove('active-pull');
+        }
+        const car = document.getElementById(`car-p${p}`);
+        if (car) {
+            car.style.left = '0%';
+            car.classList.remove('spin-out');
+        }
+    }
+    
+    // Show/hide tracks and player panels according to count
+    const container = document.querySelector('.car-race-content-container');
+    if (container) {
+        container.className = `car-race-content-container players-${playerCount}`;
+    }
+    
+    for (let p = 1; p <= 4; p++) {
+        const lane = document.getElementById(`car-race-lane-${p}`);
+        if (lane) {
+            lane.style.display = (p <= playerCount) ? 'flex' : 'none';
+        }
+        const card = document.getElementById(`car-p${p}-card`);
+        if (card) {
+            card.style.display = (p <= playerCount) ? 'flex' : 'none';
+        }
+    }
+    
+    // Generate equations (10 steps to finish)
+    carRaceQuestions = generateCarRaceQuestions(grade, 10);
+    
+    // Render initial equations
+    renderCarRaceEquations();
+    
+    // Enable keypads
+    enableCarRaceKeypads();
+    
+    // One-time initialization of keypad click handlers
+    if (!carRaceKeypadsInitialized) {
+        initCarRaceKeypads();
+        carRaceKeypadsInitialized = true;
+    }
+    
+    switchScreen('carRace');
+}
+
+function generateCarRaceQuestions(grade, count = 10) {
+    const questions = [];
+    for (let i = 0; i < count; i++) {
+        let q;
+        if (grade === 1) {
+            // Addition/subtraction up to 20
+            const isAdd = Math.random() > 0.5;
+            if (isAdd) {
+                const targetVal = getRandomInt(5, 20);
+                const a = getRandomInt(1, targetVal - 1);
+                q = { expr: `${a} + ${targetVal - a}`, answer: targetVal };
+            } else {
+                const targetVal = getRandomInt(1, 15);
+                const b = getRandomInt(1, 20 - targetVal);
+                q = { expr: `${targetVal + b} - ${b}`, answer: targetVal };
+            }
+        } else if (grade === 2) {
+            // customizable settings
+            const limit = window.grade2Settings.limit;
+            const activeOps = window.grade2Settings.ops.length > 0 ? window.grade2Settings.ops : ['+'];
+            const op = activeOps[Math.floor(Math.random() * activeOps.length)];
+            if (op === '+') {
+                const targetVal = getRandomInt(10, limit);
+                const a = getRandomInt(1, targetVal - 1);
+                q = { expr: `${a} + ${targetVal - a}`, answer: targetVal };
+            } else if (op === '-') {
+                const targetVal = getRandomInt(10, limit);
+                const b = getRandomInt(1, Math.max(1, limit - targetVal));
+                q = { expr: `${targetVal + b} - ${b}`, answer: targetVal };
+            } else if (op === '*') {
+                const maxVal = Math.min(10, limit);
+                const a = getRandomInt(2, maxVal);
+                const maxB = Math.floor(limit / a);
+                const b = getRandomInt(1, maxB || 1);
+                q = { expr: `${a} × ${b}`, answer: a * b };
+            } else if (op === '/') {
+                const maxDivisor = Math.min(10, limit);
+                const b = getRandomInt(2, maxDivisor || 2);
+                const maxTarget = Math.floor(limit / b);
+                const val = getRandomInt(1, maxTarget || 1);
+                q = { expr: `${val * b} ÷ ${b}`, answer: val };
+            }
+        } else if (grade === 3) {
+            const opType = Math.random();
+            if (opType < 0.35) {
+                const isAdd = Math.random() > 0.5;
+                const targetVal = getRandomInt(100, 1000);
+                if (isAdd) {
+                    const a = getRandomInt(50, targetVal - 50);
+                    q = { expr: `${a} + ${targetVal - a}`, answer: targetVal };
+                } else {
+                    const b = getRandomInt(50, 1000 - targetVal);
+                    q = { expr: `${targetVal + b} - ${b}`, answer: targetVal };
+                }
+            } else if (opType < 0.7) {
+                const a = getRandomInt(2, 10);
+                const b = getRandomInt(2, 10);
+                q = { expr: `${a} × ${b}`, answer: a * b };
+            } else {
+                const b = getRandomInt(2, 10);
+                const val = getRandomInt(2, 10);
+                q = { expr: `${val * b} ÷ ${b}`, answer: val };
+            }
+        } else {
+            const opType = Math.random();
+            if (opType < 0.35) {
+                const isAdd = Math.random() > 0.5;
+                const targetVal = getRandomInt(1000, 10000);
+                if (isAdd) {
+                    const a = getRandomInt(100, targetVal - 100);
+                    q = { expr: `${a} + ${targetVal - a}`, answer: targetVal };
+                } else {
+                    const b = getRandomInt(100, 10000 - targetVal);
+                    q = { expr: `${targetVal + b} - ${b}`, answer: targetVal };
+                }
+            } else if (opType < 0.7) {
+                const a = getRandomInt(11, 50);
+                const b = getRandomInt(2, 9);
+                q = { expr: `${a} × ${b}`, answer: a * b };
+            } else {
+                const b = getRandomInt(2, 20);
+                const val = getRandomInt(10, 50);
+                q = { expr: `${val * b} ÷ ${b}`, answer: val };
+            }
+        }
+        
+        q.expr = q.expr.replace('*', '×').replace('/', '÷');
+        questions.push(q);
+    }
+    return questions;
+}
+
+function renderCarRaceEquations() {
+    for (let p = 1; p <= carRacePlayerCount; p++) {
+        const idx = carRacePlayerIndices[p - 1];
+        const scoreEl = document.getElementById(`car-p${p}-score`);
+        if (scoreEl) {
+            if (idx < 10) {
+                scoreEl.textContent = `Kérdés: ${idx + 1} / 10`;
+            } else {
+                scoreEl.textContent = `Célba ért!`;
+            }
+        }
+        
+        const eqEl = document.getElementById(`car-p${p}-eq-active`);
+        if (eqEl) {
+            if (idx < 10) {
+                eqEl.textContent = carRaceQuestions[idx].expr;
+            } else {
+                eqEl.textContent = '🏁 KÉSZ!';
+            }
+        }
+    }
+}
+
+function initCarRaceKeypads() {
+    for (let p = 1; p <= 4; p++) {
+        const keypad = document.getElementById(`car-p${p}-keypad`);
+        if (keypad) {
+            const keys = keypad.querySelectorAll('.car-key');
+            keys.forEach(key => {
+                key.addEventListener('click', () => {
+                    if (carRacePlayerPenalties[p - 1]) return;
+                    const val = key.dataset.val;
+                    handleCarRaceInput(p, val);
+                });
+            });
+        }
+    }
+}
+
+function handleCarRaceInput(playerNum, keyVal) {
+    let inputStr = carRacePlayerInputs[playerNum - 1];
+    const inputEl = document.getElementById(`car-p${playerNum}-input`);
+    const card = document.getElementById(`car-p${playerNum}-card`);
+    
+    if (keyVal === 'back') {
+        inputStr = inputStr.slice(0, -1);
+    } else if (keyVal === '-') {
+        if (inputStr === '') {
+            inputStr = '-';
+        }
+    } else if (keyVal === 'ok') {
+        submitCarRaceAnswer(playerNum);
+        return;
+    } else if (inputStr.length < 5) {
+        if (inputStr === '-' && keyVal === '0') {
+            // avoid negative zero
+        } else {
+            inputStr += keyVal;
+        }
+    }
+    
+    carRacePlayerInputs[playerNum - 1] = inputStr;
+    if (inputEl) inputEl.value = inputStr;
+    
+    if (card) {
+        if (inputStr !== '') {
+            card.classList.add('active-pull');
+        } else {
+            card.classList.remove('active-pull');
+        }
+    }
+}
+
+function submitCarRaceAnswer(playerNum) {
+    const pIndex = playerNum - 1;
+    let inputStr = carRacePlayerInputs[pIndex];
+    if (inputStr === '' || inputStr === '-') return;
+    
+    const idx = carRacePlayerIndices[pIndex];
+    if (idx >= 10) return;
+    
+    const currentQ = carRaceQuestions[idx];
+    const userVal = parseInt(inputStr);
+    
+    if (userVal === currentQ.answer) {
+        carRacePlayerIndices[pIndex]++;
+        carRacePlayerInputs[pIndex] = '';
+        
+        const inputEl = document.getElementById(`car-p${playerNum}-input`);
+        if (inputEl) inputEl.value = '';
+        
+        const card = document.getElementById(`car-p${playerNum}-card`);
+        if (card) card.classList.remove('active-pull');
+        
+        // Update car position
+        const car = document.getElementById(`car-p${playerNum}`);
+        if (car) {
+            const pct = (carRacePlayerIndices[pIndex] / 10) * 100;
+            car.style.left = `${pct}%`;
+        }
+        
+        renderCarRaceEquations();
+        checkCarRaceWin(playerNum);
+    } else {
+        triggerCarRaceError(playerNum);
+    }
+}
+
+function triggerCarRaceError(playerNum) {
+    const pIndex = playerNum - 1;
+    carRacePlayerPenalties[pIndex] = true;
+    
+    const inputEl = document.getElementById(`car-p${playerNum}-input`);
+    if (inputEl) {
+        inputEl.classList.add('error-shake', 'penalty-lock');
+    }
+    
+    // Disable keypad keys
+    const keypad = document.getElementById(`car-p${playerNum}-keypad`);
+    if (keypad) {
+        const keys = keypad.querySelectorAll('.car-key');
+        keys.forEach(k => k.disabled = true);
+    }
+    
+    // Spin car
+    const car = document.getElementById(`car-p${playerNum}`);
+    if (car) {
+        car.classList.add('spin-out');
+    }
+    
+    setTimeout(() => {
+        carRacePlayerPenalties[pIndex] = false;
+        carRacePlayerInputs[pIndex] = '';
+        if (inputEl) {
+            inputEl.value = '';
+            inputEl.classList.remove('error-shake', 'penalty-lock');
+        }
+        
+        if (keypad) {
+            const keys = keypad.querySelectorAll('.car-key');
+            keys.forEach(k => k.disabled = false);
+        }
+        
+        if (car) {
+            car.classList.remove('spin-out');
+        }
+        
+        const card = document.getElementById(`car-p${playerNum}-card`);
+        if (card) card.classList.remove('active-pull');
+    }, 2000); // 2 seconds lockout
+}
+
+function enableCarRaceKeypads() {
+    for (let p = 1; p <= 4; p++) {
+        const keypad = document.getElementById(`car-p${p}-keypad`);
+        if (keypad) {
+            const keys = keypad.querySelectorAll('.car-key');
+            keys.forEach(k => k.disabled = false);
+        }
+    }
+}
+
+function checkCarRaceWin(playerNum) {
+    const pIndex = playerNum - 1;
+    if (carRacePlayerIndices[pIndex] === 10) {
+        showCarRaceWin(playerNum);
+    }
+}
+
+function showCarRaceWin(winnerNum) {
+    const playerNames = ['Kék Játékos', 'Piros Játékos', 'Sárga Játékos', 'Zöld Játékos'];
+    const winnerName = playerNames[winnerNum - 1];
+    
+    const titleEl = document.getElementById('car-race-winner-title');
+    if (titleEl) {
+        titleEl.textContent = `Győztes: ${winnerName}!`;
+    }
+    
+    const textEl = document.getElementById('car-race-winner-text');
+    if (textEl) {
+        textEl.textContent = `Gratulálok! Sikeresen elsőként értél célba az autóddal!`;
+    }
+    
+    switchScreen('carRaceWin');
+}
+
