@@ -27,8 +27,8 @@ export function startDuel(grade = 2) {
 
     const cardList = [];
     generatedPairs.forEach((pair, pairIdx) => {
-        cardList.push({ pairId: pairIdx, val: pair.value, text: pair.texts[0], isFlipped: false, isMatched: false });
-        cardList.push({ pairId: pairIdx, val: pair.value, text: pair.texts[1], isFlipped: false, isMatched: false });
+        cardList.push({ pairId: pairIdx, val: pair.value, text: pair.texts[0], isFlipped: false, capturedBy: null });
+        cardList.push({ pairId: pairIdx, val: pair.value, text: pair.texts[1], isFlipped: false, capturedBy: null });
     });
 
     // Shuffle
@@ -40,7 +40,6 @@ export function startDuel(grade = 2) {
     duelState.cards = cardList.map((c, idx) => ({ ...c, id: idx }));
     duelState.pairsLeft = numPairs;
 
-    document.getElementById('p1-score')?.replaceWith(document.getElementById('player1-score')); // ensure elements present
     const p1Score = document.getElementById('player1-score');
     const p2Score = document.getElementById('player2-score');
     if (p1Score) p1Score.textContent = '0';
@@ -86,14 +85,17 @@ function renderDuelBoard() {
     board.innerHTML = '';
     duelState.cards.forEach(card => {
         const cardElem = document.createElement('div');
-        cardElem.className = 'duel-card';
+        cardElem.className = 'card';
         if (card.isFlipped) cardElem.classList.add('flipped');
-        if (card.isMatched) cardElem.classList.add('matched');
+        if (card.capturedBy !== null) {
+            cardElem.classList.add('captured');
+            cardElem.classList.add(card.capturedBy === 1 ? 'p1-captured' : 'p2-captured');
+        }
 
         cardElem.innerHTML = `
-            <div class="duel-card-inner">
-                <div class="duel-card-front">?</div>
-                <div class="duel-card-back">${card.text}</div>
+            <div class="card-inner">
+                <div class="card-back">?</div>
+                <div class="card-front">${card.text}</div>
             </div>
         `;
 
@@ -103,7 +105,7 @@ function renderDuelBoard() {
 }
 
 function onCardClick(card) {
-    if (duelState.isProcessing || card.isFlipped || card.isMatched) return;
+    if (duelState.isProcessing || card.isFlipped || card.capturedBy !== null) return;
 
     sound.playSelect();
     card.isFlipped = true;
@@ -121,8 +123,8 @@ function checkDuelMatch() {
 
     if (c1.val === c2.val) {
         sound.playMatch();
-        c1.isMatched = true;
-        c2.isMatched = true;
+        c1.capturedBy = duelState.currentPlayer;
+        c2.capturedBy = duelState.currentPlayer;
         duelState.scores[duelState.currentPlayer]++;
         duelState.pairsLeft--;
 
@@ -136,6 +138,7 @@ function checkDuelMatch() {
 
         duelState.flippedCards = [];
         duelState.isProcessing = false;
+        renderDuelBoard();
 
         if (duelState.pairsLeft === 0) {
             showDuelWin();

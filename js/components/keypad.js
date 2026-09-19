@@ -12,7 +12,7 @@ export function setupKeypadHandler(keypadContainer, inputElem, onOkCallback) {
     }
 
     const listener = (e) => {
-        const btn = e.target.closest('button');
+        const btn = e.target.closest('button, .keypad-btn, .car-key, .tug-key, [data-val]');
         if (!btn) return;
 
         const val = btn.getAttribute('data-val');

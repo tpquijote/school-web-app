@@ -6,32 +6,53 @@ import { generateUniquePairs, switchScreen } from '../core/utils.js';
 
 let conquestState = {
     board: [],
+    selectedTiles: [],
     currentPlayer: 1,
     scores: { 1: 0, 2: 0 },
     timerInterval: null,
     timeLeft: 30,
-    currentGrade: 2
+    currentGrade: 2,
+    isProcessing: false,
+    pairsLeft: 18
 };
 
 export function startConquest(grade = 2) {
     conquestState.currentGrade = grade;
     conquestState.currentPlayer = 1;
     conquestState.scores = { 1: 0, 2: 0 };
+    conquestState.selectedTiles = [];
+    conquestState.isProcessing = false;
+    conquestState.pairsLeft = 18;
 
     if (conquestState.timerInterval) clearInterval(conquestState.timerInterval);
 
     const seed = levelSeeds[grade] || levelSeeds[2];
-    const generatedPairs = generateUniquePairs(seed, 36);
+    const generatedPairs = generateUniquePairs(seed, 18);
 
-    conquestState.board = generatedPairs.map((pair, idx) => ({
+    const tileList = [];
+    generatedPairs.forEach((pair, pairIdx) => {
+        tileList.push({ pairId: pairIdx, val: pair.value, text: pair.texts[0], owner: null });
+        tileList.push({ pairId: pairIdx, val: pair.value, text: pair.texts[1], owner: null });
+    });
+
+    // Shuffle Fisher-Yates
+    for (let i = tileList.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [tileList[i], tileList[j]] = [tileList[j], tileList[i]];
+    }
+
+    conquestState.board = tileList.map((tile, idx) => ({
+        ...tile,
         id: idx,
-        val: pair.value,
-        text: pair.texts[0],
-        owner: null // null, 1 (Blue), 2 (Red)
+        row: Math.floor(idx / 6),
+        col: idx % 6
     }));
 
     const gradeDisplay = document.getElementById('conquest-grade-display');
     if (gradeDisplay) gradeDisplay.textContent = seed.name;
+
+    const pairsDisplay = document.getElementById('conquest-pairs-left');
+    if (pairsDisplay) pairsDisplay.textContent = `Hátralévő helyek: ${conquestState.board.filter(c => c.owner === null).length}`;
 
     updateConquestTurnDisplay();
     renderConquestBoard();
@@ -76,36 +97,94 @@ function renderConquestBoard() {
     board.innerHTML = '';
     conquestState.board.forEach(cell => {
         const slot = document.createElement('div');
-        slot.className = 'conquest-slot';
-        if (cell.owner === 1) slot.classList.add('p1');
-        if (cell.owner === 2) slot.classList.add('p2');
+        slot.className = 'conquest-tile';
+        if (cell.owner === 1) slot.classList.add('claimed-p1');
+        if (cell.owner === 2) slot.classList.add('claimed-p2');
+        if (conquestState.selectedTiles.some(t => t.id === cell.id)) {
+            slot.classList.add(conquestState.currentPlayer === 1 ? 'selected-p1' : 'selected-p2');
+        }
 
         slot.textContent = cell.text;
         slot.addEventListener('click', () => onConquestTileClick(cell));
         board.appendChild(slot);
     });
+
+    const pairsDisplay = document.getElementById('conquest-pairs-left');
+    if (pairsDisplay) pairsDisplay.textContent = `Hátralévő helyek: ${conquestState.board.filter(c => c.owner === null).length}`;
 }
 
 function onConquestTileClick(cell) {
-    if (cell.owner !== null) return;
+    if (conquestState.isProcessing || cell.owner !== null) return;
 
-    cell.owner = conquestState.currentPlayer;
-    sound.playMatch();
-    conquestState.scores[conquestState.currentPlayer]++;
-
-    renderConquestBoard();
-
-    if (checkConquestWin()) {
-        showConquestWin();
+    // Toggle selection
+    const selIdx = conquestState.selectedTiles.findIndex(t => t.id === cell.id);
+    if (selIdx !== -1) {
+        conquestState.selectedTiles.splice(selIdx, 1);
+        sound.playSelect();
+        renderConquestBoard();
         return;
     }
 
-    conquestState.currentPlayer = conquestState.currentPlayer === 1 ? 2 : 1;
-    updateConquestTurnDisplay();
+    conquestState.selectedTiles.push(cell);
+    sound.playSelect();
+    renderConquestBoard();
 
-    if (grade2Settings.conquestTimerEnabled) {
-        startConquestTimer();
+    if (conquestState.selectedTiles.length === 2) {
+        checkConquestMatch();
     }
+}
+
+function checkConquestMatch() {
+    conquestState.isProcessing = true;
+    const [t1, t2] = conquestState.selectedTiles;
+
+    if (t1.val === t2.val) {
+        sound.playMatch();
+        t1.owner = conquestState.currentPlayer;
+        t2.owner = conquestState.currentPlayer;
+        conquestState.scores[conquestState.currentPlayer] += 2;
+
+        conquestState.selectedTiles = [];
+        renderConquestBoard();
+
+        if (checkConquestWin()) {
+            showConquestWin();
+            return;
+        }
+
+        conquestState.isProcessing = false;
+        // Turn passes to next player
+        conquestState.currentPlayer = conquestState.currentPlayer === 1 ? 2 : 1;
+        updateConquestTurnDisplay();
+        if (grade2Settings.conquestTimerEnabled) {
+            startConquestTimer();
+        }
+    } else {
+        sound.playError();
+        showConquestMessage("Hibás párosítás!", "#ff6b6b");
+
+        setTimeout(() => {
+            conquestState.selectedTiles = [];
+            conquestState.isProcessing = false;
+            conquestState.currentPlayer = conquestState.currentPlayer === 1 ? 2 : 1;
+            updateConquestTurnDisplay();
+            renderConquestBoard();
+            if (grade2Settings.conquestTimerEnabled) {
+                startConquestTimer();
+            }
+        }, 1000);
+    }
+}
+
+function showConquestMessage(text, color = 'var(--accent-color)') {
+    const msgArea = document.getElementById('conquest-message-area');
+    if (!msgArea) return;
+    msgArea.textContent = text;
+    msgArea.style.color = color;
+    msgArea.classList.add('show');
+    setTimeout(() => {
+        msgArea.classList.remove('show');
+    }, 1500);
 }
 
 function startConquestTimer() {
@@ -119,6 +198,7 @@ function startConquestTimer() {
     if (timerBar) timerBar.style.width = '100%';
 
     conquestState.timerInterval = setInterval(() => {
+        if (conquestState.isProcessing) return;
         conquestState.timeLeft--;
         if (timerText) timerText.textContent = `${conquestState.timeLeft} másodperc`;
         if (timerBar) {
@@ -129,9 +209,11 @@ function startConquestTimer() {
         if (conquestState.timeLeft <= 0) {
             clearInterval(conquestState.timerInterval);
             sound.playError();
-            // Pass turn
+            showConquestMessage("Lejárt az idő! Passz.", "#ff9f1c");
+            conquestState.selectedTiles = [];
             conquestState.currentPlayer = conquestState.currentPlayer === 1 ? 2 : 1;
             updateConquestTurnDisplay();
+            renderConquestBoard();
             startConquestTimer();
         }
     }, 1000);
@@ -196,8 +278,10 @@ function showConquestWin() {
 
 export function passConquestTurn() {
     sound.playSelect();
+    conquestState.selectedTiles = [];
     conquestState.currentPlayer = conquestState.currentPlayer === 1 ? 2 : 1;
     updateConquestTurnDisplay();
+    renderConquestBoard();
     if (grade2Settings.conquestTimerEnabled) {
         startConquestTimer();
     }

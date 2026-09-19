@@ -12,6 +12,13 @@ let tugState = {
     currentGrade: 2
 };
 
+function getQuestionText(pair) {
+    if (!pair || !pair.texts) return '';
+    // Find expression text (containing arithmetic operator + - * / x ÷)
+    const expr = pair.texts.find(t => /[+\-×÷*\/]/.test(t));
+    return expr || pair.texts[0];
+}
+
 export function startTug(grade = 2, playerCount = 2) {
     tugState.currentGrade = grade;
     tugState.playerCount = playerCount;
@@ -61,7 +68,7 @@ function updatePlayerQuestionUI(pId) {
     if (!player) return;
 
     const eqActive = document.getElementById(`tug-p${pId}-eq-active`);
-    if (eqActive) eqActive.textContent = player.currentPair.texts[0];
+    if (eqActive) eqActive.textContent = getQuestionText(player.currentPair);
 
     const scoreElem = document.getElementById(`tug-p${pId}-score`);
     if (scoreElem) scoreElem.textContent = `Kérdés: ${player.score}`;

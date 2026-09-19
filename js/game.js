@@ -10,8 +10,21 @@ import { startTug } from './games/tug.js';
 import { startCarRace } from './games/carrace.js';
 
 let selectedMode = 'mahjong';
+let selectedGrade = 2;
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Grade Selection Buttons
+    document.querySelectorAll('.grade-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const grade = parseInt(e.currentTarget.getAttribute('data-grade'), 10);
+            if (grade) {
+                selectedGrade = grade;
+                document.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+            }
+        });
+    });
+
     // Main Menu Buttons
     document.querySelectorAll('.mode-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -46,7 +59,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.querySelectorAll('.op-toggle-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            const op = e.currentTarget.getAttribute('data-op');
             e.currentTarget.classList.toggle('active');
             
             const activeOps = [];
@@ -109,12 +121,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const startGameBtn = document.getElementById('start-game-btn');
     if (startGameBtn) {
         startGameBtn.addEventListener('click', () => {
-            if (selectedMode === 'mahjong') initMahjongGame(2);
-            else if (selectedMode === 'duel') startDuel(2);
-            else if (selectedMode === 'conquest') startConquest(2);
-            else if (selectedMode === 'race') startRace(2);
-            else if (selectedMode === 'tug') startTug(2, selectedTugPlayers);
-            else if (selectedMode === 'carRace') startCarRace(2, selectedCarPlayers);
+            if (selectedMode === 'mahjong') initMahjongGame(selectedGrade);
+            else if (selectedMode === 'duel') startDuel(selectedGrade);
+            else if (selectedMode === 'conquest') startConquest(selectedGrade);
+            else if (selectedMode === 'race') startRace(selectedGrade);
+            else if (selectedMode === 'tug') startTug(selectedGrade, selectedTugPlayers);
+            else if (selectedMode === 'carRace') startCarRace(selectedGrade, selectedCarPlayers);
         });
     }
 
@@ -131,12 +143,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Play Again Buttons
-    document.getElementById('play-again-btn')?.addEventListener('click', () => initMahjongGame(2));
-    document.getElementById('duel-play-again-btn')?.addEventListener('click', () => startDuel(2));
-    document.getElementById('conquest-play-again-btn')?.addEventListener('click', () => startConquest(2));
-    document.getElementById('race-play-again-btn')?.addEventListener('click', () => startRace(2));
-    document.getElementById('tug-play-again-btn')?.addEventListener('click', () => startTug(2, selectedTugPlayers));
-    document.getElementById('car-race-play-again-btn')?.addEventListener('click', () => startCarRace(2, selectedCarPlayers));
+    document.getElementById('play-again-btn')?.addEventListener('click', () => initMahjongGame(selectedGrade));
+    document.getElementById('duel-play-again-btn')?.addEventListener('click', () => startDuel(selectedGrade));
+    document.getElementById('conquest-play-again-btn')?.addEventListener('click', () => startConquest(selectedGrade));
+    document.getElementById('race-play-again-btn')?.addEventListener('click', () => startRace(selectedGrade));
+    document.getElementById('tug-play-again-btn')?.addEventListener('click', () => startTug(selectedGrade, selectedTugPlayers));
+    document.getElementById('car-race-play-again-btn')?.addEventListener('click', () => startCarRace(selectedGrade, selectedCarPlayers));
 
     // Special Game Buttons
     document.getElementById('conquest-pass-btn')?.addEventListener('click', passConquestTurn);

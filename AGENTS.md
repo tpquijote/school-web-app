@@ -7,7 +7,9 @@ This document provides concise context and standards for AI agents (Claude, Code
 ## 1. Project Overview & Tech Stack
 - **Project Name**: Szám-Játékok (Math Games Platform)
 - **Tech Stack**: HTML5, CSS3, ES6 JavaScript Modules (Vanilla JS, no heavy framework required to keep runtime lightweight and web-standard compliant), Node.js for tests/scripts.
-- **Hosting & CI**: GitHub Pages for public deployment; GitHub Actions (`.github/workflows/ci.yml`) for automated testing.
+- **Hosting & CI**:
+  - CI workflow in `.github/workflows/ci.yml` (configured with `workflow_dispatch` for manual triggers).
+  - GitHub Pages deployment workflow in `.github/workflows/deploy.yml` supporting **Live** (`/`) and **Preview** (`/preview/`) versions.
 - **Languages**:
   - **Codebase & Specs**: English (variable names, functions, comments, docs, commit messages).
   - **User Interface**: Hungarian (labels, game titles, player messages).
@@ -24,7 +26,7 @@ This document provides concise context and standards for AI agents (Claude, Code
 - `docs/`: System specifications and feature documentation.
 - `skills/`: CLI tools and helper scripts for AI agents to run, test, and inspect the codebase.
 - `tests/`: Automated unit and feature tests.
-- `.github/workflows/ci.yml`: GitHub Actions CI pipeline configuration.
+- `.github/workflows/`: GitHub Actions workflows (`ci.yml`, `deploy.yml`).
 
 ---
 

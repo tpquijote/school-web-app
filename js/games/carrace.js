@@ -12,6 +12,12 @@ let carRaceState = {
     targetQuestions: 10
 };
 
+function getQuestionText(pair) {
+    if (!pair || !pair.texts) return '';
+    const expr = pair.texts.find(t => /[+\-×÷*\/]/.test(t));
+    return expr || pair.texts[0];
+}
+
 export function startCarRace(grade = 2, playerCount = 2) {
     carRaceState.currentGrade = grade;
     carRaceState.playerCount = playerCount;
@@ -61,7 +67,7 @@ function updateCarPlayerUI(pId) {
     if (!player) return;
 
     const eqActive = document.getElementById(`car-p${pId}-eq-active`);
-    if (eqActive) eqActive.textContent = player.currentPair.texts[0];
+    if (eqActive) eqActive.textContent = getQuestionText(player.currentPair);
 
     const scoreElem = document.getElementById(`car-p${pId}-score`);
     if (scoreElem) scoreElem.textContent = `Kérdés: ${player.progress + 1} / ${carRaceState.targetQuestions}`;

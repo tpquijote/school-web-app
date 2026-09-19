@@ -1,10 +1,8 @@
 name: CI Test & Validate
 
+# Manual trigger only to prevent automatic CI runs on push/pull_request
 on:
-  push:
-    branches: [ main, master, 'refactor-*' ]
-  pull_request:
-    branches: [ main, master ]
+  workflow_dispatch:
 
 jobs:
   test:

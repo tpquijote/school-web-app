@@ -14,29 +14,26 @@ An interactive, multi-mode educational mathematics game collection designed for 
 
 ---
 
-## 🚀 How to Set Up Public Web Hosting (GitHub Pages)
+## 🚀 Public Web Deployment (GitHub Pages: Live & Preview)
 
-Because this project is a pure static web app (HTML, CSS, ES modules), it can be hosted for free on **GitHub Pages** in under 1 minute:
+The project includes an automated GitHub Pages deployment workflow (`.github/workflows/deploy.yml`) that deploys both **Live** and **Preview** endpoints in a single site artifact:
 
-1. Push your repository to GitHub.
-2. In your GitHub repository, click on **Settings** (top menu).
-3. In the left sidebar, under *Code and automation*, click **Pages**.
-4. Under **Build and deployment** -> **Source**, select **Deploy from a branch**.
-5. Under **Branch**, select `main` (or `master`) branch and set the folder to `/ (root)`.
-6. Click **Save**.
-7. GitHub will generate your free public URL (e.g. `https://<username>.github.io/<repo-name>/`).
+- **Live Version**: Available at root URL:
+  `https://<username>.github.io/<repo-name>/`
+- **Preview / Test Version**: Available at the `/preview/` subpath:
+  `https://<username>.github.io/<repo-name>/preview/`
+
+### How to Enable GitHub Pages
+1. Go to your repository on GitHub -> **Settings**.
+2. In the left menu under *Code and automation*, click **Pages**.
+3. Under **Build and deployment** -> **Source**, select **GitHub Actions**.
 
 ---
 
-## 🧪 Testing in GitHub
+## 🧪 Testing
 
-### Automated Testing (CI)
-This repository includes a GitHub Actions workflow (`.github/workflows/ci.yml`). Every time code is pushed or a pull request is opened, GitHub automatically runs:
-1. `npm test` - Executes unit tests in `tests/levels.test.js`.
-2. `node skills/validate-levels.cjs` - Validates arithmetic expression generation across Grades 1–4.
-3. `node skills/check-modules.cjs` - Verifies file layout and component module integrity.
-
-You can view test results under the **Actions** tab on your GitHub repository.
+### Automated CI Testing
+The CI workflow (`.github/workflows/ci.yml`) is configured for manual execution (`workflow_dispatch`) under the Actions tab.
 
 ### Local Testing
 To run tests locally:

@@ -5,6 +5,15 @@ import { levelSeeds } from '../core/levels.js';
 import { setupKeypadHandler } from '../components/keypad.js';
 import { switchScreen } from '../core/utils.js';
 
+const BOARD_SPECIALS = {
+    4: { type: 'rocket', delta: 4, icon: '🚀' },
+    14: { type: 'rocket', delta: 5, icon: '🚀' },
+    25: { type: 'rocket', delta: 5, icon: '🚀' },
+    9: { type: 'swamp', delta: -4, icon: '🐊' },
+    20: { type: 'swamp', delta: -4, icon: '🐊' },
+    31: { type: 'swamp', delta: -4, icon: '🐊' }
+};
+
 let raceState = {
     positions: { 1: 0, 2: 0 },
     currentPlayer: 1,
@@ -12,6 +21,12 @@ let raceState = {
     currentPair: null,
     currentGrade: 2
 };
+
+function getQuestionText(pair) {
+    if (!pair || !pair.texts) return '';
+    const expr = pair.texts.find(t => /[+\-×÷*\/]/.test(t));
+    return expr || pair.texts[0];
+}
 
 export function startRace(grade = 2) {
     raceState.currentGrade = grade;
@@ -37,6 +52,19 @@ export function startRace(grade = 2) {
     const input = document.getElementById('race-answer-input');
     setupKeypadHandler(keypad, input, submitRaceAnswer);
 
+    const submitBtn = document.getElementById('race-submit-btn');
+    if (submitBtn) {
+        submitBtn.onclick = submitRaceAnswer;
+    }
+
+    if (input) {
+        input.onkeydown = (e) => {
+            if (e.key === 'Enter') {
+                submitRaceAnswer();
+            }
+        };
+    }
+
     switchScreen('race-screen');
 }
 
@@ -47,9 +75,15 @@ function updateRaceBoard() {
     board.innerHTML = '';
     for (let i = 0; i < 36; i++) {
         const space = document.createElement('div');
-        space.className = 'race-space';
-        if (i === 0) space.classList.add('start');
-        if (i === 35) space.classList.add('finish');
+        space.className = 'race-tile';
+
+        const special = BOARD_SPECIALS[i];
+        if (special) {
+            space.classList.add(`tile-${special.type}`);
+        }
+
+        if (i === 0) space.classList.add('tile-start');
+        if (i === 35) space.classList.add('tile-finish');
 
         let label = (i + 1).toString();
         if (i === 0) label = "START";
@@ -60,8 +94,8 @@ function updateRaceBoard() {
         if (raceState.positions[2] === i) tokensHtml += '<span class="p2-token">🟥</span>';
 
         space.innerHTML = `
-            <div class="space-num">${label}</div>
-            <div class="space-tokens">${tokensHtml}</div>
+            <div class="tile-number">${label} ${special ? `<span class="tile-icon">${special.icon}</span>` : ''}</div>
+            <div class="token-container">${tokensHtml}</div>
         `;
 
         board.appendChild(space);
@@ -119,7 +153,7 @@ export function rollRaceDice() {
             raceState.currentPair = seed.generatePair();
 
             const qText = document.getElementById('race-question-text');
-            if (qText) qText.textContent = `${raceState.currentPair.texts[0]} = `;
+            if (qText) qText.textContent = `${getQuestionText(raceState.currentPair)} = `;
 
             const input = document.getElementById('race-answer-input');
             if (input) input.value = '';
@@ -142,12 +176,21 @@ export function submitRaceAnswer() {
 
     if (userVal === expected) {
         sound.playMatch();
-        raceState.positions[raceState.currentPlayer] += raceState.rolledValue;
-        if (raceState.positions[raceState.currentPlayer] >= 35) {
+        let newPos = raceState.positions[raceState.currentPlayer] + raceState.rolledValue;
+
+        // Handle special board space rocket/swamp delta
+        const special = BOARD_SPECIALS[newPos];
+        if (special) {
+            newPos = Math.max(0, Math.min(35, newPos + special.delta));
+        }
+
+        if (newPos >= 35) {
             raceState.positions[raceState.currentPlayer] = 35;
             updateRaceBoard();
             showRaceWin();
             return;
+        } else {
+            raceState.positions[raceState.currentPlayer] = newPos;
         }
     } else {
         sound.playError();

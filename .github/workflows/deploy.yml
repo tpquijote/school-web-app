@@ -1,0 +1,55 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ '**' ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main branch (for Live site)
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: live_checkout
+
+      - name: Checkout current branch (for Preview site)
+        uses: actions/checkout@v4
+        with:
+          path: preview_checkout
+
+      - name: Prepare Site Artifact (Live and Preview)
+        run: |
+          mkdir -p _site
+          # Live site at root / always comes from main branch
+          cp -r live_checkout/index.html live_checkout/style.css live_checkout/js live_checkout/docs _site/
+
+          # Preview site at /preview/ comes from current branch
+          mkdir -p _site/preview
+          cp -r preview_checkout/index.html preview_checkout/style.css preview_checkout/js preview_checkout/docs _site/preview/
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '_site'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
