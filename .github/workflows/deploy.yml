@@ -1,0 +1,100 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ master, main, 'refactor-*', 'feature/*', 'test*' ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'test'
+        type: choice
+        options:
+          - test
+          - prod
+
+# Allow one concurrent deployment
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
+# Permissions required for GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout Current Branch
+        uses: actions/checkout@v4
+        with:
+          path: current_branch
+
+      - name: Checkout Default Branch (master/main)
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          path: prod_branch
+        continue-on-error: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run Tests (if package.json exists)
+        run: |
+          cd current_branch
+          if [ -f "package.json" ]; then
+            npm test
+          else
+            echo "No package.json found; skipping npm test."
+          fi
+
+      - name: Validate Levels & Modules (if scripts exist)
+        run: |
+          cd current_branch
+          if [ -f "skills/validate-levels.cjs" ]; then
+            node skills/validate-levels.cjs
+          fi
+          if [ -f "skills/check-modules.cjs" ]; then
+            node skills/check-modules.cjs
+          fi
+
+      - name: Prepare Site Build Directory
+        run: |
+          mkdir -p build_output
+
+          # 1. Determine Prod files source
+          if [ -f "prod_branch/index.html" ]; then
+            PROD_SRC="prod_branch"
+          else
+            PROD_SRC="current_branch"
+          fi
+
+          echo "Copying Production files from $PROD_SRC to root /"
+          rsync -av --exclude='.git' --exclude='.github' "$PROD_SRC/" build_output/
+
+          # 2. Always maintain /test/ subfolder so both Prod and Test versions are live
+          echo "Copying Test files from current_branch to /test/"
+          mkdir -p build_output/test
+          rsync -av --exclude='.git' --exclude='.github' current_branch/ build_output/test/
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'build_output'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
