@@ -1,0 +1,13 @@
+{
+  "name": "szam-jatekok",
+  "version": "1.0.0",
+  "description": "Math Games Platform",
+  "main": "js/game.js",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "skills:validate": "node skills/validate-levels.cjs",
+    "skills:check": "node skills/check-modules.cjs"
+  },
+  "devDependencies": {}
+}
