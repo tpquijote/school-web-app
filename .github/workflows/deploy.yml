@@ -26,19 +26,18 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Prepare Site Artifact (Live from main/origin/main, Preview from current branch)
+      - name: Prepare Site Artifact (Live from main, Preview from current branch)
         run: |
           mkdir -p _site
           mkdir -p _site/preview
 
-          # Resolve robust git reference for Live site (origin/main, origin/master, main, or HEAD)
-          MAIN_REF=$(git rev-parse --verify origin/main 2>/dev/null || git rev-parse --verify origin/master 2>/dev/null || git rev-parse --verify main 2>/dev/null || git rev-parse --verify master 2>/dev/null || echo "HEAD")
-          echo "Using $MAIN_REF for Live site at root /"
-
-          # Extract Live site from main reference into _site/ root
+          # 1. Populate Live site at root / from main (or origin/main)
+          MAIN_REF=$(git rev-parse --verify origin/main 2>/dev/null || git rev-parse --verify main 2>/dev/null || echo "HEAD")
+          echo "Building Live site root / from $MAIN_REF..."
           git archive "$MAIN_REF" index.html style.css js | tar -x -C _site/
 
-          # Extract Preview site from current HEAD branch into _site/preview/
+          # 2. Populate Preview site at /preview/ from current HEAD
+          echo "Building Preview site at /preview/ from current HEAD..."
           git archive HEAD index.html style.css js | tar -x -C _site/preview/
 
       - name: Setup Pages
