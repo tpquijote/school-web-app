@@ -1,0 +1,53 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ '**' ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository (fetch all branches and history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Prepare Site Artifact (Live from main, Preview from current branch)
+        run: |
+          mkdir -p _site
+          mkdir -p _site/preview
+
+          # 1. Build Live site at root / from main
+          MAIN_REF=$(git rev-parse --verify origin/main 2>/dev/null || git rev-parse --verify origin/master 2>/dev/null || git rev-parse --verify main 2>/dev/null || git rev-parse --verify master 2>/dev/null || echo "HEAD")
+          echo "Building Live site at / from reference $MAIN_REF..."
+          git archive "$MAIN_REF" index.html style.css js | tar -x -C _site/
+
+          # 2. Build Preview site at /preview/ from current pushed branch (HEAD)
+          echo "Building Preview site at /preview/ from current HEAD..."
+          git archive HEAD index.html style.css js | tar -x -C _site/preview/
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '_site'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
