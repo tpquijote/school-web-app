@@ -7,14 +7,16 @@ import { switchScreen } from '../core/utils.js';
 export const balloonSettings = {
     mode: 'standard', // 'standard', 'reversed', or 'mixed'
     targetPops: 10,
-    spawnIntervalMs: 2200,
-    speedSeconds: 8.0
+    maxLives: 3,
+    spawnIntervalMs: 2000,
+    speedSeconds: 7.0
 };
 
 let gameState = {
     score: 0,
+    lives: 3,
     currentGrade: 2,
-    activeTarget: null, // { expressionText, targetValue, isReversed }
+    activeTarget: null, // { questionText, targetValue, correctBalloonText, isReversed }
     spawnTimer: null,
     balloons: [], // active DOM elements or tracking objects
     isRunning: false
@@ -89,6 +91,7 @@ export function startBalloonGame(grade = 2) {
 
     gameState.currentGrade = grade;
     gameState.score = 0;
+    gameState.lives = balloonSettings.maxLives;
     gameState.isRunning = true;
     gameState.balloons = [];
 
@@ -182,8 +185,8 @@ function spawnBalloon(forceCorrect = null) {
     const balloonElem = document.createElement('div');
     balloonElem.className = 'floating-balloon';
 
-    // Random position across width (5% to 85%)
-    const posX = getRandomInt(5, 85);
+    // Random position across width safely inside viewport (8% to 80%)
+    const posX = getRandomInt(8, 80);
     balloonElem.style.left = `${posX}%`;
 
     // Random color
@@ -194,9 +197,14 @@ function spawnBalloon(forceCorrect = null) {
     const duration = balloonSettings.speedSeconds + (Math.random() * 2 - 1);
     balloonElem.style.animationDuration = `${duration}s`;
 
+    // Font sizing based on text length
+    let fontSizeClass = '';
+    if (balloonText.length > 6) fontSizeClass = 'small-text';
+    else if (balloonText.length > 4) fontSizeClass = 'medium-text';
+
     balloonElem.innerHTML = `
         <div class="balloon-body">
-            <span class="balloon-text">${balloonText}</span>
+            <span class="balloon-text ${fontSizeClass}">${balloonText}</span>
         </div>
         <div class="balloon-string"></div>
     `;
@@ -244,6 +252,14 @@ function handleBalloonClick(balloonObj) {
     } else {
         sound.playError();
         popBalloonAnim(elem, false);
+
+        // Deduct 1 life for popping the wrong balloon
+        gameState.lives--;
+        updateBalloonUI();
+
+        if (gameState.lives <= 0) {
+            showBalloonGameOver();
+        }
     }
 
     // Remove from active list
@@ -265,10 +281,29 @@ function updateBalloonUI() {
     if (scoreElem) {
         scoreElem.textContent = `${gameState.score} / ${balloonSettings.targetPops}`;
     }
+
+    const livesElem = document.getElementById('balloon-lives');
+    if (livesElem) {
+        let heartsHTML = '';
+        for (let i = 0; i < balloonSettings.maxLives; i++) {
+            if (i < gameState.lives) {
+                heartsHTML += '<span class="heart">❤️</span>';
+            } else {
+                heartsHTML += '<span class="heart lost">🖤</span>';
+            }
+        }
+        livesElem.innerHTML = heartsHTML;
+    }
 }
 
 function showBalloonWin() {
     stopBalloonGame();
     sound.playWin();
     switchScreen('balloon-win-screen');
+}
+
+function showBalloonGameOver() {
+    stopBalloonGame();
+    sound.playError();
+    switchScreen('balloon-gameover-screen');
 }

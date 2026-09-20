@@ -776,9 +776,12 @@
         <!-- Balloon Game Screen -->
         <div id="balloon-screen" class="screen">
             <header class="game-header">
-                <div class="stats">
+                <div class="stats" style="display: flex; align-items: center; gap: 12px;">
                     <span id="balloon-grade-display">Lufi-Matek</span> |
-                    <span>Lufik: <span id="balloon-score">0 / 10</span></span>
+                    <span>Lufik: <span id="balloon-score">0 / 10</span></span> |
+                    <span id="balloon-lives" class="player-lives" style="margin-top: 0; font-size: 1.2rem;">
+                        <span class="heart">❤️</span><span class="heart">❤️</span><span class="heart">❤️</span>
+                    </span>
                 </div>
                 <button id="balloon-back-btn" class="btn small-btn">Vissza</button>
             </header>
@@ -801,6 +804,18 @@
                 <div class="win-actions">
                     <button id="balloon-play-again-btn" class="btn">Új játék</button>
                     <button id="balloon-win-back-to-menu-btn" class="btn secondary-btn">Főmenü</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Balloon Game Over Screen -->
+        <div id="balloon-gameover-screen" class="screen">
+            <div class="menu-content">
+                <h1 style="color: #ff6b6b;">Játék Vége!</h1>
+                <p>Elfogyott az összes életed. Próbáld újra!</p>
+                <div class="win-actions">
+                    <button id="balloon-retry-btn" class="btn">Újra</button>
+                    <button id="balloon-gameover-back-to-menu-btn" class="btn secondary-btn">Főmenü</button>
                 </div>
             </div>
         </div>

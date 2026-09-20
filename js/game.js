@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'race-back-btn', 'tug-back-btn', 'car-race-back-btn', 'balloon-back-btn',
         'win-back-to-menu-btn', 'duel-win-back-to-menu-btn', 'conquest-win-back-to-menu-btn',
         'race-win-back-to-menu-btn', 'tug-win-back-to-menu-btn', 'car-race-win-back-to-menu-btn',
-        'balloon-win-back-to-menu-btn'
+        'balloon-win-back-to-menu-btn', 'balloon-gameover-back-to-menu-btn'
     ];
     backMenuButtons.forEach(btnId => {
         const btn = document.getElementById(btnId);
@@ -168,6 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('tug-play-again-btn')?.addEventListener('click', () => startTug(selectedGrade, selectedTugPlayers));
     document.getElementById('car-race-play-again-btn')?.addEventListener('click', () => startCarRace(selectedGrade, selectedCarPlayers));
     document.getElementById('balloon-play-again-btn')?.addEventListener('click', () => startBalloonGame(selectedGrade));
+    document.getElementById('balloon-retry-btn')?.addEventListener('click', () => startBalloonGame(selectedGrade));
 
     // Special Game Buttons
     document.getElementById('conquest-pass-btn')?.addEventListener('click', passConquestTurn);

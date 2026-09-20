@@ -2,9 +2,15 @@
 
 import assert from 'node:assert/strict';
 import { test, describe } from 'node:test';
-import { createTargetFromPair, generateWrongBalloonOptions } from '../js/games/balloon.js';
+import { createTargetFromPair, generateWrongBalloonOptions, balloonSettings } from '../js/games/balloon.js';
 
 describe('Balloon Game Logic (js/games/balloon.js)', () => {
+    test('Balloon Game - default balloonSettings includes lives and pop targets', () => {
+        assert.strictEqual(balloonSettings.targetPops, 10);
+        assert.strictEqual(balloonSettings.maxLives, 3);
+        assert.ok(balloonSettings.speedSeconds > 0);
+    });
+
     test('Balloon Game - createTargetFromPair standard mode', () => {
         const pair = {
             value: 12,
