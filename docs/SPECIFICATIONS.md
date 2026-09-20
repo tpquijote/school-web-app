@@ -72,6 +72,17 @@ The arithmetic engine generates pairs of matching mathematical representations (
   - Each player has an individual equation and custom touch keypad.
   - First to answer 10 questions correctly wins the car race.
 
+### Game Mode 7: Lufi-Matek (Math Balloon Popping)
+- **Goal**: Pop 10 balloons containing correct mathematical answers or expressions as they float upward from bottom to top.
+- **Rules**:
+  - **Modes**:
+    - **Standard (Normál)**: Target equation displayed at top panel, balloons float up with numbers. Pop the balloon with the matching result.
+    - **Reversed (Fordított)**: Target number displayed at top panel, balloons float up with equations. Pop the balloon with the matching equation value.
+    - **Mixed (Vegyes)**: Randomly alternates between standard and reversed targets.
+  - Correct balloon pop increases score and triggers pop animation + match sound.
+  - Incorrect balloon pop triggers error sound + shake effect without advancing score.
+  - First player to reach 10 correct balloon pops wins the game.
+
 ---
 
 ## 3. UI Keypad Component Specifications

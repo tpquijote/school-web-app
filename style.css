@@ -434,8 +434,8 @@ h1 {
     border-color: #5fe0d7;
 }
 
-/* Orientation & Player Count settings selector buttons */
-.orientation-btn, .player-count-btn, .tug-player-count-btn {
+/* Orientation & Player Count & Balloon Mode settings selector buttons */
+.orientation-btn, .player-count-btn, .tug-player-count-btn, .balloon-mode-btn {
     font-family: 'Nunito', sans-serif;
     font-weight: 700;
     font-size: 1.1rem;
@@ -447,19 +447,19 @@ h1 {
     text-align: center;
 }
 
-.orientation-btn:hover, .player-count-btn:hover, .tug-player-count-btn:hover {
+.orientation-btn:hover, .player-count-btn:hover, .tug-player-count-btn:hover, .balloon-mode-btn:hover {
     border-color: rgba(255, 255, 255, 0.5);
     transform: translateY(-1px);
 }
 
-.orientation-btn.active, .player-count-btn.active, .tug-player-count-btn.active {
+.orientation-btn.active, .player-count-btn.active, .tug-player-count-btn.active, .balloon-mode-btn.active {
     background: var(--secondary-color);
     color: white;
     border-color: var(--secondary-color);
     box-shadow: 0 0 15px rgba(78, 205, 196, 0.4), 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
-.orientation-btn.active:hover, .player-count-btn.active:hover, .tug-player-count-btn.active:hover {
+.orientation-btn.active:hover, .player-count-btn.active:hover, .tug-player-count-btn.active:hover, .balloon-mode-btn.active:hover {
     background: #5fe0d7;
     border-color: #5fe0d7;
 }
@@ -2900,6 +2900,180 @@ h1 {
     
     .car-key:active:not(:disabled) { transform: translateY(2px); }
     .car-key.submit-key:active:not(:disabled) { transform: translateY(2px); }
+}
+
+/* ==========================================================================
+   Lufi-Matek (Balloon Game) Mode Styles
+   ========================================================================== */
+
+#balloon-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.balloon-target-panel {
+    position: absolute;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(12px);
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    border-radius: 30px;
+    padding: 10px 28px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    z-index: 10;
+}
+
+.balloon-target-label {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #f7fff7;
+}
+
+.balloon-target-text {
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: #ffe66d;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.balloon-arena {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: auto;
+}
+
+.floating-balloon {
+    position: absolute;
+    bottom: -150px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    animation: floatUp 8s linear forwards;
+    user-select: none;
+    touch-action: manipulation;
+    z-index: 5;
+}
+
+.floating-balloon:hover .balloon-body {
+    transform: scale(1.08);
+}
+
+.balloon-body {
+    width: 90px;
+    height: 110px;
+    background: var(--balloon-color, #ff6b6b);
+    border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    box-shadow: inset -10px -10px 20px rgba(0, 0, 0, 0.2), 0 8px 15px rgba(0, 0, 0, 0.25);
+    transition: transform 0.15s ease-out;
+}
+
+.balloon-body::before {
+    content: '';
+    position: absolute;
+    top: 15px;
+    left: 18px;
+    width: 20px;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.45);
+    border-radius: 50%;
+    transform: rotate(-30deg);
+}
+
+.balloon-body::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-bottom: 8px solid var(--balloon-color, #ff6b6b);
+}
+
+.balloon-text {
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: #ffffff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+    text-align: center;
+    padding: 0 6px;
+    line-height: 1.1;
+}
+
+.balloon-string {
+    width: 2px;
+    height: 45px;
+    background: rgba(255, 255, 255, 0.5);
+    margin-top: 4px;
+}
+
+@keyframes floatUp {
+    0% {
+        transform: translateY(0) translateX(0) rotate(0deg);
+    }
+    25% {
+        transform: translateY(-25vh) translateX(15px) rotate(4deg);
+    }
+    50% {
+        transform: translateY(-50vh) translateX(-15px) rotate(-4deg);
+    }
+    75% {
+        transform: translateY(-75vh) translateX(10px) rotate(3deg);
+    }
+    100% {
+        transform: translateY(-115vh) translateX(0) rotate(0deg);
+    }
+}
+
+.floating-balloon.pop-correct {
+    animation: balloonPop 0.35s ease-out forwards !important;
+}
+
+.floating-balloon.pop-wrong {
+    animation: balloonShake 0.35s ease-in-out forwards !important;
+}
+
+@keyframes balloonPop {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.4);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(0);
+        opacity: 0;
+    }
+}
+
+@keyframes balloonShake {
+    0%, 100% { transform: scale(1) translateX(0); }
+    25% { transform: scale(0.95) translateX(-10px) rotate(-8deg); }
+    75% { transform: scale(0.95) translateX(10px) rotate(8deg); }
 }
 
 

@@ -21,6 +21,7 @@
                     <button class="btn mode-btn" id="race-mode-btn" data-mode="race" style="background: #a29bfe; box-shadow: 0 6px 0 #6c5ce7;">Matematikai Kaland (Társasjáték)</button>
                     <button class="btn mode-btn" id="tug-mode-btn" data-mode="tug" style="background: #00b4d8; box-shadow: 0 6px 0 #0077b6;">Kötélhúzás (Speed-Matek)</button>
                     <button class="btn mode-btn" id="car-race-mode-btn" data-mode="carRace" style="background: #fdcb6e; box-shadow: 0 6px 0 #e1b12c;">Autóverseny (Speed-Párbaj)</button>
+                    <button class="btn mode-btn" id="balloon-mode-btn" data-mode="balloon" style="background: #e84393; box-shadow: 0 6px 0 #c23616;">Lufi-Matek (Lufipukkasztó)</button>
                 </div>
             </div>
         </div>
@@ -98,6 +99,15 @@
                             <button type="button" class="player-count-btn active" data-count="2" style="flex: 1; padding: 10px; font-weight: 700; border-radius: 12px;">2 Játékos</button>
                             <button type="button" class="player-count-btn" data-count="3" style="flex: 1; padding: 10px; font-weight: 700; border-radius: 12px;">3 Játékos</button>
                             <button type="button" class="player-count-btn" data-count="4" style="flex: 1; padding: 10px; font-weight: 700; border-radius: 12px;">4 Játékos</button>
+                        </div>
+                    </div>
+
+                    <div class="settings-group" id="balloon-options-group" style="display: none;">
+                        <span class="settings-label">Játék mód:</span>
+                        <div class="balloon-mode-selectors" style="display: flex; gap: 8px; margin-top: 8px; width: 100%;">
+                            <button type="button" class="balloon-mode-btn active" data-bmode="standard" style="flex: 1; padding: 8px; font-weight: 700; border-radius: 12px; font-size: 0.95rem;">Normál (Kifejezés ➔ Szám)</button>
+                            <button type="button" class="balloon-mode-btn" data-bmode="reversed" style="flex: 1; padding: 8px; font-weight: 700; border-radius: 12px; font-size: 0.95rem;">Fordított (Szám ➔ Kifejezés)</button>
+                            <button type="button" class="balloon-mode-btn" data-bmode="mixed" style="flex: 1; padding: 8px; font-weight: 700; border-radius: 12px; font-size: 0.95rem;">Vegyes</button>
                         </div>
                     </div>
                 </div>
@@ -759,6 +769,38 @@
                 <div class="win-actions">
                     <button id="car-race-play-again-btn" class="btn">Új játék</button>
                     <button id="car-race-win-back-to-menu-btn" class="btn secondary-btn">Főmenü</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Balloon Game Screen -->
+        <div id="balloon-screen" class="screen">
+            <header class="game-header">
+                <div class="stats">
+                    <span id="balloon-grade-display">Lufi-Matek</span> |
+                    <span>Lufik: <span id="balloon-score">0 / 10</span></span>
+                </div>
+                <button id="balloon-back-btn" class="btn small-btn">Vissza</button>
+            </header>
+
+            <div class="balloon-target-panel">
+                <span class="balloon-target-label">Keresd ezt:</span>
+                <span id="balloon-target-text" class="balloon-target-text">--</span>
+            </div>
+
+            <div id="balloon-container" class="balloon-arena">
+                <!-- Floating balloons will be dynamically injected here -->
+            </div>
+        </div>
+
+        <!-- Balloon Win Screen -->
+        <div id="balloon-win-screen" class="screen">
+            <div class="menu-content">
+                <h1>Gratulálok!</h1>
+                <p>Minden lufit kipukkasztottál!</p>
+                <div class="win-actions">
+                    <button id="balloon-play-again-btn" class="btn">Új játék</button>
+                    <button id="balloon-win-back-to-menu-btn" class="btn secondary-btn">Főmenü</button>
                 </div>
             </div>
         </div>
