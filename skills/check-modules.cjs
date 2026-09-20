@@ -18,7 +18,8 @@ const filesToCheck = [
     'js/games/conquest.js',
     'js/games/race.js',
     'js/games/tug.js',
-    'js/games/carrace.js'
+  'js/games/carrace.js',
+  'js/games/balloon.js'
 ];
 
 let allPassed = true;

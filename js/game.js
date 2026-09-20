@@ -8,6 +8,7 @@ import { startConquest, passConquestTurn, stopConquestTimer } from './games/conq
 import { startRace, rollRaceDice } from './games/race.js';
 import { startTug } from './games/tug.js';
 import { startCarRace } from './games/carrace.js';
+import { startBalloonGame, stopBalloonGame, balloonSettings } from './games/balloon.js';
 
 let selectedMode = 'mahjong';
 let selectedGrade = 2;
@@ -36,12 +37,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const raceGroup = document.getElementById('race-options-group');
             const tugGroup = document.getElementById('tug-options-group');
             const carGroup = document.getElementById('car-race-options-group');
+            const balloonGroup = document.getElementById('balloon-options-group');
             
             if (memoryGroup) memoryGroup.style.display = selectedMode === 'duel' ? 'block' : 'none';
             if (conquestGroup) conquestGroup.style.display = selectedMode === 'conquest' ? 'block' : 'none';
             if (raceGroup) raceGroup.style.display = selectedMode === 'race' ? 'block' : 'none';
             if (tugGroup) tugGroup.style.display = selectedMode === 'tug' ? 'block' : 'none';
             if (carGroup) carGroup.style.display = selectedMode === 'carRace' ? 'block' : 'none';
+            if (balloonGroup) balloonGroup.style.display = selectedMode === 'balloon' ? 'block' : 'none';
             
             switchScreen('settings-screen');
         });
@@ -98,6 +101,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Balloon Mode Selectors
+    document.querySelectorAll('.balloon-mode-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.balloon-mode-btn').forEach(b => b.classList.remove('active'));
+            e.currentTarget.classList.add('active');
+            balloonSettings.mode = e.currentTarget.getAttribute('data-bmode');
+        });
+    });
+
     // Tug & Car Race Player Count Selectors
     let selectedTugPlayers = 2;
     document.querySelectorAll('.tug-player-count-btn').forEach(btn => {
@@ -127,20 +139,23 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (selectedMode === 'race') startRace(selectedGrade);
             else if (selectedMode === 'tug') startTug(selectedGrade, selectedTugPlayers);
             else if (selectedMode === 'carRace') startCarRace(selectedGrade, selectedCarPlayers);
+            else if (selectedMode === 'balloon') startBalloonGame(selectedGrade);
         });
     }
 
     // Back Buttons
     const backMenuButtons = [
         'settings-back-btn', 'back-btn', 'duel-back-btn', 'conquest-back-btn',
-        'race-back-btn', 'tug-back-btn', 'car-race-back-btn',
+        'race-back-btn', 'tug-back-btn', 'car-race-back-btn', 'balloon-back-btn',
         'win-back-to-menu-btn', 'duel-win-back-to-menu-btn', 'conquest-win-back-to-menu-btn',
-        'race-win-back-to-menu-btn', 'tug-win-back-to-menu-btn', 'car-race-win-back-to-menu-btn'
+        'race-win-back-to-menu-btn', 'tug-win-back-to-menu-btn', 'car-race-win-back-to-menu-btn',
+        'balloon-win-back-to-menu-btn', 'balloon-gameover-back-to-menu-btn'
     ];
     backMenuButtons.forEach(btnId => {
         const btn = document.getElementById(btnId);
         if (btn) btn.addEventListener('click', () => {
             stopConquestTimer();
+            stopBalloonGame();
             switchScreen('main-menu');
         });
     });
@@ -152,6 +167,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('race-play-again-btn')?.addEventListener('click', () => startRace(selectedGrade));
     document.getElementById('tug-play-again-btn')?.addEventListener('click', () => startTug(selectedGrade, selectedTugPlayers));
     document.getElementById('car-race-play-again-btn')?.addEventListener('click', () => startCarRace(selectedGrade, selectedCarPlayers));
+    document.getElementById('balloon-play-again-btn')?.addEventListener('click', () => startBalloonGame(selectedGrade));
+    document.getElementById('balloon-retry-btn')?.addEventListener('click', () => startBalloonGame(selectedGrade));
 
     // Special Game Buttons
     document.getElementById('conquest-pass-btn')?.addEventListener('click', passConquestTurn);
