@@ -32,6 +32,15 @@
                 <p class="subtitle">Szabd testre a feladatokat!</p>
                 
                 <div class="settings-scroll-area">
+                    <div class="settings-group" id="mahjong-options-group" style="display: none;">
+                        <label for="mahjong-tile-slider" class="settings-label">
+                            Kockák száma: <span id="mahjong-tile-val">52</span> (<span id="mahjong-pair-val">26</span> pár)
+                        </label>
+                        <div class="slider-container">
+                            <input type="range" id="mahjong-tile-slider" min="12" max="52" step="4" value="52" class="modern-slider">
+                        </div>
+                    </div>
+
                     <div class="settings-group">
                         <label for="limit-slider" class="settings-label">
                             Számkör limit: <span id="limit-val">100</span>

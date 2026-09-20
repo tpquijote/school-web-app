@@ -31,12 +31,14 @@ document.addEventListener('DOMContentLoaded', () => {
             selectedMode = e.currentTarget.getAttribute('data-mode');
             
             // Show mode-specific settings
+            const mahjongGroup = document.getElementById('mahjong-options-group');
             const memoryGroup = document.getElementById('memory-time-group');
             const conquestGroup = document.getElementById('conquest-options-group');
             const raceGroup = document.getElementById('race-options-group');
             const tugGroup = document.getElementById('tug-options-group');
             const carGroup = document.getElementById('car-race-options-group');
             
+            if (mahjongGroup) mahjongGroup.style.display = selectedMode === 'mahjong' ? 'block' : 'none';
             if (memoryGroup) memoryGroup.style.display = selectedMode === 'duel' ? 'block' : 'none';
             if (conquestGroup) conquestGroup.style.display = selectedMode === 'conquest' ? 'block' : 'none';
             if (raceGroup) raceGroup.style.display = selectedMode === 'race' ? 'block' : 'none';
@@ -48,6 +50,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Settings Controls
+    const mahjongTileSlider = document.getElementById('mahjong-tile-slider');
+    const mahjongTileVal = document.getElementById('mahjong-tile-val');
+    const mahjongPairVal = document.getElementById('mahjong-pair-val');
+    if (mahjongTileSlider) {
+        mahjongTileSlider.addEventListener('input', (e) => {
+            const tiles = parseInt(e.target.value, 10);
+            const pairs = Math.floor(tiles / 2);
+            grade2Settings.mahjongPairs = pairs;
+            if (mahjongTileVal) mahjongTileVal.textContent = tiles;
+            if (mahjongPairVal) mahjongPairVal.textContent = pairs;
+        });
+    }
+
     const limitSlider = document.getElementById('limit-slider');
     const limitVal = document.getElementById('limit-val');
     if (limitSlider) {

@@ -161,6 +161,8 @@ h1 {
     align-items: center;
     perspective: 1000px;
     margin-top: 60px;
+    overflow: hidden;
+    position: relative;
 }
 
 #game-board {
@@ -341,7 +343,7 @@ h1 {
     color: var(--text-color);
 }
 
-#limit-val, #memory-time-val {
+#limit-val, #memory-time-val, #mahjong-tile-val, #mahjong-pair-val {
     color: var(--accent-color);
     font-size: 1.5rem;
     font-weight: 900;
