@@ -16,17 +16,26 @@ An interactive, multi-mode educational mathematics game collection designed for 
 
 ## 🚀 Public Web Deployment (GitHub Pages: Live & Preview)
 
-The project includes an automated GitHub Pages deployment workflow (`.github/workflows/deploy.yml`) that deploys both **Live** and **Preview** endpoints in a single site artifact:
+The automated deployment workflow (`.github/workflows/deploy.yml`) builds both **Live** and **Preview** versions into a single deployment artifact on every push:
 
-- **Live Version**: Available at root URL:
+- **Live Version (Root `/`)**:
   `https://<username>.github.io/<repo-name>/`
-- **Preview / Test Version**: Available at the `/preview/` subpath:
-  `https://<username>.github.io/<repo-name>/preview/`
+  *(Built from the stable `main` branch)*
 
-### How to Enable GitHub Pages
+- **Preview Version (`/preview/`)**:
+  `https://<username>.github.io/<repo-name>/preview/`
+  *(Built from the latest pushed commit/branch)*
+
+### ⚙️ Important GitHub Settings for Preview Deployments
+
+To ensure GitHub allows feature and development branches to deploy to GitHub Pages without protection rule rejections:
+
 1. Go to your repository on GitHub -> **Settings**.
-2. In the left menu under *Code and automation*, click **Pages**.
-3. Under **Build and deployment** -> **Source**, select **GitHub Actions**.
+2. On the left sidebar under *Code and automation*, click **Pages**.
+3. Set **Build and deployment** -> **Source** to **GitHub Actions**.
+4. On the left sidebar, click **Environments**.
+5. Click on **`github-pages`**.
+6. Under **Deployment branches and tags**, select **No restrictions** or **All branches** (or add `refactor-*` / your branch pattern).
 
 ---
 
