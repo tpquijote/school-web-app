@@ -1,8 +1,6 @@
 name: Deploy to GitHub Pages
 
 on:
-  push:
-    branches: [ '**' ]
   workflow_dispatch:
 
 permissions:
@@ -21,26 +19,25 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout main branch (for Live site)
+      - name: Checkout repository (fetch all branches and history)
         uses: actions/checkout@v4
         with:
-          ref: main
-          path: live_checkout
+          fetch-depth: 0
 
-      - name: Checkout current branch (for Preview site)
-        uses: actions/checkout@v4
-        with:
-          path: preview_checkout
-
-      - name: Prepare Site Artifact (Live and Preview)
+      - name: Prepare Site Artifact (Live from main/origin/main, Preview from current branch)
         run: |
           mkdir -p _site
-          # Live site at root / always comes from main branch
-          cp -r live_checkout/index.html live_checkout/style.css live_checkout/js live_checkout/docs _site/
-
-          # Preview site at /preview/ comes from current branch
           mkdir -p _site/preview
-          cp -r preview_checkout/index.html preview_checkout/style.css preview_checkout/js preview_checkout/docs _site/preview/
+
+          # Resolve robust git reference for Live site (origin/main, origin/master, main, or HEAD)
+          MAIN_REF=$(git rev-parse --verify origin/main 2>/dev/null || git rev-parse --verify origin/master 2>/dev/null || git rev-parse --verify main 2>/dev/null || git rev-parse --verify master 2>/dev/null || echo "HEAD")
+          echo "Using $MAIN_REF for Live site at root /"
+
+          # Extract Live site from main reference into _site/ root
+          git archive "$MAIN_REF" index.html style.css js | tar -x -C _site/
+
+          # Extract Preview site from current HEAD branch into _site/preview/
+          git archive HEAD index.html style.css js | tar -x -C _site/preview/
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

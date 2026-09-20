@@ -48,6 +48,11 @@ export function startRace(grade = 2) {
     const rollBtn = document.getElementById('race-roll-btn');
     if (rollBtn) rollBtn.style.display = 'inline-block';
 
+    const diceFace = document.getElementById('race-dice-face');
+    if (diceFace) {
+        diceFace.onclick = rollRaceDice;
+    }
+
     const keypad = document.getElementById('race-keypad');
     const input = document.getElementById('race-answer-input');
     setupKeypadHandler(keypad, input, submitRaceAnswer);
