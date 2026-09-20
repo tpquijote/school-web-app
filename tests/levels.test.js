@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test, describe } from 'node:test';
-import { levelSeeds, gameLayout, grade2Settings } from '../js/core/levels.js';
+import { levelSeeds, gameLayout, generateLayoutGrid, grade2Settings } from '../js/core/levels.js';
 
 describe('Level Generators ES Module (js/core/levels.js)', () => {
     test('levelSeeds object is defined for grades 1-4', () => {
@@ -29,8 +29,14 @@ describe('Level Generators ES Module (js/core/levels.js)', () => {
         }
     });
 
-    test('Mahjong layout generator outputs 52 tiles', () => {
+    test('Mahjong layout generator outputs 52 tiles by default and respects pairCount parameter', () => {
         assert.ok(Array.isArray(gameLayout), 'gameLayout should be an array');
-        assert.equal(gameLayout.length, 52, 'gameLayout should have 52 tiles');
+        assert.equal(gameLayout.length, 52, 'gameLayout default should have 52 tiles');
+
+        const layout10 = generateLayoutGrid(10);
+        assert.equal(layout10.length, 20, 'generateLayoutGrid(10) should have 20 tiles');
+
+        const layout16 = generateLayoutGrid(16);
+        assert.equal(layout16.length, 32, 'generateLayoutGrid(16) should have 32 tiles');
     });
 });

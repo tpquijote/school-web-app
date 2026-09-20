@@ -5,7 +5,8 @@ export const grade2Settings = {
     ops: ['+', '-', '*', '/'],
     memoryTime: 2.0,
     conquestTimerEnabled: false,
-    conquestTimerLimit: 30
+    conquestTimerLimit: 30,
+    mahjongPairs: 26
 };
 
 // Expose settings on window for backwards compatibility if needed
@@ -203,29 +204,43 @@ export const levelSeeds = {
     }
 };
 
-export function generateLayoutGrid() {
-    const layout = [];
+export function generateLayoutGrid(pairCount = 26) {
+    const totalTiles = pairCount * 2;
+    const fullLayout = [];
     
-    for(let r=0; r<6; r++) {
-        for(let c=0; c<6; c++) {
-            if ((r===0||r===5) && (c===0||c===5)) continue; 
-            layout.push({l: 0, r: r, c: c});
+    for (let r = 0; r < 6; r++) {
+        for (let c = 0; c < 6; c++) {
+            if ((r === 0 || r === 5) && (c === 0 || c === 5)) continue;
+            fullLayout.push({ l: 0, r: r, c: c });
         }
     }
 
-    for(let r=1; r<=4; r++) {
-        for(let c=1; c<=4; c++) {
-            layout.push({l: 1, r: r, c: c});
+    for (let r = 1; r <= 4; r++) {
+        for (let c = 1; c <= 4; c++) {
+            fullLayout.push({ l: 1, r: r, c: c });
         }
     }
 
-    for(let r=2; r<=3; r++) {
-        for(let c=2; c<=3; c++) {
-            layout.push({l: 2, r: r, c: c});
+    for (let r = 2; r <= 3; r++) {
+        for (let c = 2; c <= 3; c++) {
+            fullLayout.push({ l: 2, r: r, c: c });
         }
     }
+
+    if (totalTiles >= fullLayout.length) {
+        return fullLayout;
+    }
+
+    // Sort by foundation layer first, then distance to center (r=2.5, c=2.5)
+    const priorityKey = (t) => {
+        const dist = Math.abs(t.r - 2.5) + Math.abs(t.c - 2.5);
+        return (t.l * 100) + dist;
+    };
+
+    const sortedLayout = [...fullLayout].sort((a, b) => priorityKey(a) - priorityKey(b));
+    const selected = sortedLayout.slice(0, totalTiles);
     
-    return layout;
+    return selected.sort((a, b) => (a.l - b.l) || (a.r - b.r) || (a.c - b.c));
 }
 
 export const gameLayout = generateLayoutGrid();

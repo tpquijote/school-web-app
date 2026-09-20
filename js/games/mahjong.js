@@ -1,7 +1,7 @@
 // js/games/mahjong.js
 
 import { sound } from '../core/audio.js';
-import { levelSeeds, gameLayout } from '../core/levels.js';
+import { levelSeeds, gameLayout, generateLayoutGrid, grade2Settings } from '../core/levels.js';
 import { generateUniquePairs, switchScreen } from '../core/utils.js';
 
 let mahjongState = {
@@ -9,7 +9,8 @@ let mahjongState = {
     selectedTile: null,
     pairsLeft: 26,
     currentGrade: 2,
-    isProcessing: false
+    isProcessing: false,
+    activeLayout: []
 };
 
 export function initMahjongGame(grade = 2) {
@@ -18,14 +19,17 @@ export function initMahjongGame(grade = 2) {
     mahjongState.isProcessing = false;
 
     const seed = levelSeeds[grade] || levelSeeds[2];
-    const generatedPairs = generateUniquePairs(seed, 26);
+    const pairCount = grade2Settings.mahjongPairs || 26;
+    const generatedPairs = generateUniquePairs(seed, pairCount);
+    const layout = generateLayoutGrid(pairCount);
+    mahjongState.activeLayout = layout;
 
-    // Create 52 blank layout tiles based on template
-    const tiles = gameLayout.map((layout, idx) => ({
+    // Create blank layout tiles based on template
+    const tiles = layout.map((loc, idx) => ({
         id: idx,
-        layer: layout.l,
-        row: layout.r,
-        col: layout.c,
+        layer: loc.l,
+        row: loc.r,
+        col: loc.c,
         val: null,
         text: null,
         isFree: false,
@@ -66,7 +70,7 @@ export function initMahjongGame(grade = 2) {
     }
 
     mahjongState.tiles = tiles;
-    mahjongState.pairsLeft = 26;
+    mahjongState.pairsLeft = pairCount;
 
     const gradeDisplay = document.getElementById('grade-display');
     if (gradeDisplay) gradeDisplay.textContent = seed.name;
@@ -78,6 +82,7 @@ export function initMahjongGame(grade = 2) {
     updateFreeTileStatus(mahjongState.tiles);
     updateTileDOMClasses();
     switchScreen('game-screen');
+    setTimeout(fitMahjongBoard, 50);
 }
 
 function updateUnassignedFreeStatus(tileList) {
@@ -148,15 +153,56 @@ function updateFreeTileStatus(tileList) {
     });
 }
 
+export function fitMahjongBoard() {
+    const boardContainer = document.getElementById('game-board-container');
+    const board = document.getElementById('game-board');
+    if (!boardContainer || !board) return;
+
+    const boardWidth = parseFloat(board.style.width) || 460;
+    const boardHeight = parseFloat(board.style.height) || 550;
+
+    const containerWidth = boardContainer.clientWidth;
+    const containerHeight = boardContainer.clientHeight;
+
+    if (!containerWidth || !containerHeight) return;
+
+    const availableWidth = containerWidth - 20;
+    const availableHeight = containerHeight - 20;
+
+    const scaleX = availableWidth / boardWidth;
+    const scaleY = availableHeight / boardHeight;
+    const scale = Math.min(1, scaleX, scaleY);
+
+    if (scale < 1) {
+        board.style.transform = `scale(${scale.toFixed(3)})`;
+        board.style.transformOrigin = 'center center';
+    } else {
+        board.style.transform = 'none';
+    }
+}
+
+if (typeof window !== 'undefined') {
+    window.addEventListener('resize', () => {
+        const gameScreen = document.getElementById('game-screen');
+        if (gameScreen && gameScreen.classList.contains('active')) {
+            fitMahjongBoard();
+        }
+    });
+}
+
 function renderMahjongBoard() {
     const board = document.getElementById('game-board');
     if (!board) return;
 
     board.innerHTML = '';
 
+    const layout = mahjongState.activeLayout && mahjongState.activeLayout.length > 0
+        ? mahjongState.activeLayout
+        : gameLayout;
+
     let maxCol = 0;
     let maxRow = 0;
-    gameLayout.forEach(t => {
+    layout.forEach(t => {
         if (t.c > maxCol) maxCol = t.c;
         if (t.r > maxRow) maxRow = t.r;
     });
@@ -183,6 +229,8 @@ function renderMahjongBoard() {
         tileElem.addEventListener('click', () => onTileClick(tile));
         board.appendChild(tileElem);
     });
+
+    fitMahjongBoard();
 }
 
 function updateTileDOMClasses() {
