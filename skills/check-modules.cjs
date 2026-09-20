@@ -1,8 +1,3 @@
-#!/usr/bin/env node
-/**
- * Agent Skill: Check Module Dependencies and Syntax Integrity
- */
-
 const fs = require('fs');
 const path = require('path');
 
@@ -12,24 +7,35 @@ const filesToCheck = [
     'index.html',
     'style.css',
     'AGENTS.md',
-    'DOMINO_TODO.md'
+    'DOMINO_TODO.md',
+    'js/game.js',
+    'js/core/audio.js',
+    'js/core/levels.js',
+    'js/core/utils.js',
+    'js/components/keypad.js',
+    'js/games/mahjong.js',
+    'js/games/duel.js',
+    'js/games/conquest.js',
+    'js/games/race.js',
+    'js/games/tug.js',
+    'js/games/carrace.js'
 ];
 
-let errors = 0;
+let allPassed = true;
 
 filesToCheck.forEach(file => {
     const fullPath = path.join(__dirname, '..', file);
-    if (!fs.existsSync(fullPath)) {
-        console.error(`❌ Missing file: ${file}`);
-        errors++;
-    } else {
+    if (fs.existsSync(fullPath)) {
         console.log(`✓ File present: ${file}`);
+    } else {
+        console.error(`✗ Missing required file: ${file}`);
+        allPassed = false;
     }
 });
 
-if (errors > 0) {
-    console.error(`❌ Found ${errors} missing required files.`);
-    process.exit(1);
+if (allPassed) {
+    console.log("✅ File structure integrity check passed.");
 } else {
-    console.log("✅ Basic file integrity check passed.");
+    console.error("❌ File structure check failed!");
+    process.exit(1);
 }

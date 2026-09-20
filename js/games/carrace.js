@@ -32,6 +32,7 @@ export function startCarRace(grade = 2, playerCount = 2) {
         carRaceState.players[pId] = {
             id: pId,
             progress: 0, // 0 to 10
+            isPenalized: false,
             currentPair: seed.generatePair()
         };
     });
@@ -78,7 +79,7 @@ function updateCarPlayerUI(pId) {
 
 function submitCarAnswer(pId, userValStr) {
     const player = carRaceState.players[pId];
-    if (!player) return;
+    if (!player || player.isPenalized) return;
 
     const userVal = parseInt(userValStr, 10);
     const expected = player.currentPair.value;
@@ -99,9 +100,36 @@ function submitCarAnswer(pId, userValStr) {
         updateCarPlayerUI(pId);
     } else {
         sound.playError();
-        const input = document.getElementById(`car-p${pId}-input`);
-        if (input) input.value = '';
+        triggerCarPenalty(pId);
     }
+}
+
+function triggerCarPenalty(pId) {
+    const player = carRaceState.players[pId];
+    if (!player) return;
+
+    player.isPenalized = true;
+
+    const input = document.getElementById(`car-p${pId}-input`);
+    if (input) {
+        input.value = '';
+        input.classList.add('error-shake', 'penalty-lock');
+    }
+
+    const car = document.getElementById(`car-p${pId}`);
+    if (car) {
+        car.classList.add('spin-out');
+    }
+
+    setTimeout(() => {
+        player.isPenalized = false;
+        if (input) {
+            input.classList.remove('error-shake', 'penalty-lock');
+        }
+        if (car) {
+            car.classList.remove('spin-out');
+        }
+    }, 2000);
 }
 
 function updateCarPositions() {

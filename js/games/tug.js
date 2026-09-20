@@ -106,17 +106,32 @@ function submitTugAnswer(pId, userValStr) {
     } else {
         sound.playError();
         const input = document.getElementById(`tug-p${pId}-input`);
-        if (input) input.value = '';
+        if (input) {
+            input.value = '';
+            input.classList.add('error-shake');
+            setTimeout(() => input.classList.remove('error-shake'), 500);
+        }
     }
 }
 
 function updateRopeUI() {
     const flag = document.getElementById('tug-rope-flag');
-    if (!flag) return;
+    if (flag) {
+        // ropePos is between -4 and +4
+        const pct = 50 + (tugState.ropePos / 4) * 40; // 10% to 90%
+        flag.style.left = `${pct}%`;
+    }
 
-    // ropePos is between -4 and +4
-    const pct = 50 + (tugState.ropePos / 4) * 40; // 10% to 90%
-    flag.style.left = `${pct}%`;
+    // Update active rope nodes (-4 to +4)
+    const nodes = document.querySelectorAll('.tug-node');
+    nodes.forEach(node => {
+        const val = parseInt(node.getAttribute('data-pos'), 10);
+        if (val === tugState.ropePos) {
+            node.classList.add('active-node');
+        } else {
+            node.classList.remove('active-node');
+        }
+    });
 }
 
 function showTugWin() {

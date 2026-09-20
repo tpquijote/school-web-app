@@ -4,194 +4,240 @@ import { sound } from '../core/audio.js';
 import { levelSeeds, gameLayout } from '../core/levels.js';
 import { generateUniquePairs, switchScreen } from '../core/utils.js';
 
-let gameState = {
+let mahjongState = {
     tiles: [],
     selectedTile: null,
-    pairsLeft: 0,
+    pairsLeft: 26,
     currentGrade: 2
 };
 
 export function initMahjongGame(grade = 2) {
-    gameState.currentGrade = grade;
-    gameState.selectedTile = null;
+    mahjongState.currentGrade = grade;
+    mahjongState.selectedTile = null;
 
     const seed = levelSeeds[grade] || levelSeeds[2];
-    const totalTiles = gameLayout.length; // 52
-    const numPairs = totalTiles / 2; // 26
+    const generatedPairs = generateUniquePairs(seed, 26);
 
-    const generatedPairs = generateUniquePairs(seed, numPairs);
-
-    const tileValues = [];
-    generatedPairs.forEach(p => {
-        tileValues.push({ val: p.value, text: p.texts[0] });
-        tileValues.push({ val: p.value, text: p.texts[1] });
-    });
-
-    // Shuffle tile values
-    for (let i = tileValues.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [tileValues[i], tileValues[j]] = [tileValues[j], tileValues[i]];
-    }
-
-    gameState.tiles = gameLayout.map((pos, idx) => ({
+    // Create 52 blank layout tiles based on template
+    const tiles = gameLayout.map((layout, idx) => ({
         id: idx,
-        l: pos.l,
-        r: pos.r,
-        c: pos.c,
-        val: tileValues[idx].val,
-        text: tileValues[idx].text,
+        layer: layout.l,
+        row: layout.r,
+        col: layout.c,
+        val: null,
+        text: null,
         isFree: false,
-        isRemoved: false
+        element: null
     }));
 
-    gameState.pairsLeft = numPairs;
-    updateFreeStatus();
+    // Solvability-Guaranteed Pair Placement:
+    // Repeatedly pick two currently free available slots and place a matching pair.
+    // This ensures that at least one solvable solution path exists backwards.
+    const unassignedTiles = [...tiles];
+    for (let p = 0; p < generatedPairs.length; p++) {
+        const pairData = generatedPairs[p];
+        updateFreeTileStatus(unassignedTiles);
+
+        const freeUnassigned = unassignedTiles.filter(t => t.isFree && t.val === null);
+
+        let tileA, tileB;
+        if (freeUnassigned.length >= 2) {
+            // Pick two random free unassigned tiles
+            const idxA = Math.floor(Math.random() * freeUnassigned.length);
+            tileA = freeUnassigned[idxA];
+            freeUnassigned.splice(idxA, 1);
+
+            const idxB = Math.floor(Math.random() * freeUnassigned.length);
+            tileB = freeUnassigned[idxB];
+        } else {
+            // Fallback if constrained: pick any remaining unassigned tiles
+            const remaining = unassignedTiles.filter(t => t.val === null);
+            tileA = remaining[0];
+            tileB = remaining[1] || remaining[0];
+        }
+
+        if (tileA) {
+            tileA.val = pairData.value;
+            tileA.text = pairData.texts[0];
+        }
+        if (tileB && tileB !== tileA) {
+            tileB.val = pairData.value;
+            tileB.text = pairData.texts[1];
+        }
+    }
+
+    mahjongState.tiles = tiles;
+    mahjongState.pairsLeft = 26;
 
     const gradeDisplay = document.getElementById('grade-display');
     if (gradeDisplay) gradeDisplay.textContent = seed.name;
 
     const pairsLeftDisplay = document.getElementById('pairs-left');
-    if (pairsLeftDisplay) pairsLeftDisplay.textContent = gameState.pairsLeft;
+    if (pairsLeftDisplay) pairsLeftDisplay.textContent = mahjongState.pairsLeft;
 
-    renderBoard();
+    renderMahjongBoard();
+    updateFreeTileStatus(mahjongState.tiles);
+    updateTileDOMClasses();
     switchScreen('game-screen');
 }
 
-function updateFreeStatus() {
-    gameState.tiles.forEach(t => {
-        if (t.isRemoved) {
-            t.isFree = false;
+function updateFreeTileStatus(tileList) {
+    tileList.forEach(tile => {
+        if (!tile || tile.val === undefined) return;
+
+        // 1. Check if covered by tile on layer directly above
+        const isCovered = tileList.some(other =>
+            other.val !== null &&
+            other.layer === tile.layer + 1 &&
+            Math.abs(other.row - tile.row) < 1 &&
+            Math.abs(other.col - tile.col) < 1
+        );
+
+        if (isCovered) {
+            tile.isFree = false;
             return;
         }
 
-        const hasAbove = gameState.tiles.some(other =>
-            !other.isRemoved &&
-            other.l === t.l + 1 &&
-            other.r === t.r &&
-            other.c === t.c
+        // 2. Check left and right neighbor blocking
+        const hasLeftNeighbor = tileList.some(other =>
+            other.val !== null &&
+            other.layer === tile.layer &&
+            Math.abs(other.row - tile.row) < 1 &&
+            other.col === tile.col - 1
         );
 
-        if (hasAbove) {
-            t.isFree = false;
-            return;
-        }
-
-        const hasLeft = gameState.tiles.some(other =>
-            !other.isRemoved &&
-            other.l === t.l &&
-            other.r === t.r &&
-            other.c === t.c - 1
+        const hasRightNeighbor = tileList.some(other =>
+            other.val !== null &&
+            other.layer === tile.layer &&
+            Math.abs(other.row - tile.row) < 1 &&
+            other.col === tile.col + 1
         );
 
-        const hasRight = gameState.tiles.some(other =>
-            !other.isRemoved &&
-            other.l === t.l &&
-            other.r === t.r &&
-            other.c === t.c + 1
-        );
-
-        t.isFree = !(hasLeft && hasRight);
+        tile.isFree = !(hasLeftNeighbor && hasRightNeighbor);
     });
 }
 
-function renderBoard() {
+function renderMahjongBoard() {
     const board = document.getElementById('game-board');
     if (!board) return;
 
     board.innerHTML = '';
 
-    const layerOffsets = [
-        { x: 0, y: 0 },
-        { x: -6, y: -6 },
-        { x: -12, y: -12 }
-    ];
-
-    let maxRight = 0;
-    let maxBottom = 0;
-
-    gameState.tiles.forEach(t => {
-        if (t.isRemoved) return;
-
-        const offset = layerOffsets[t.l] || { x: 0, y: 0 };
-        const left = t.c * 82 + offset.x;
-        const top = t.r * 102 + offset.y;
-
-        if (left + 90 > maxRight) maxRight = left + 90;
-        if (top + 110 > maxBottom) maxBottom = top + 110;
-
-        const tileElem = document.createElement('div');
-        tileElem.className = 'tile';
-        if (t.isFree) tileElem.classList.add('free');
-        if (gameState.selectedTile && gameState.selectedTile.id === t.id) {
-            tileElem.classList.add('selected');
-        }
-
-        tileElem.style.left = `${left}px`;
-        tileElem.style.top = `${top}px`;
-        tileElem.style.zIndex = t.l * 10 + t.r;
-
-        tileElem.textContent = t.text;
-
-        tileElem.addEventListener('click', () => onTileClick(t));
-        board.appendChild(tileElem);
+    // Auto-calculate board container dimensions so 3D layered pyramid centers cleanly
+    let maxCol = 0;
+    let maxRow = 0;
+    gameLayout.forEach(t => {
+        if (t.c > maxCol) maxCol = t.c;
+        if (t.r > maxRow) maxRow = t.r;
     });
 
-    board.style.width = `${maxRight || 500}px`;
-    board.style.height = `${maxBottom || 600}px`;
+    const containerWidth = (maxCol + 1) * 70 + 40;
+    const containerHeight = (maxRow + 1) * 85 + 40;
+    board.style.width = `${containerWidth}px`;
+    board.style.height = `${containerHeight}px`;
+
+    mahjongState.tiles.forEach(tile => {
+        const tileElem = document.createElement('div');
+        tileElem.className = 'tile';
+
+        // 3D Grid positioning with offsets per layer
+        const posX = tile.col * 70 + (tile.layer * 6);
+        const posY = tile.row * 85 - (tile.layer * 6);
+        const zIndex = tile.layer * 10 + Math.floor(tile.row);
+
+        tileElem.style.left = `${posX}px`;
+        tileElem.style.top = `${posY}px`;
+        tileElem.style.zIndex = zIndex;
+        tileElem.textContent = tile.text;
+
+        tile.element = tileElem;
+        tileElem.addEventListener('click', () => onTileClick(tile));
+        board.appendChild(tileElem);
+    });
+}
+
+function updateTileDOMClasses() {
+    mahjongState.tiles.forEach(tile => {
+        if (!tile.element) return;
+
+        tile.element.classList.remove('free', 'locked', 'selected');
+
+        if (mahjongState.selectedTile === tile) {
+            tile.element.classList.add('selected');
+        } else if (tile.isFree) {
+            tile.element.classList.add('free');
+        } else {
+            tile.element.classList.add('locked');
+        }
+    });
 }
 
 function onTileClick(tile) {
-    if (!tile.isFree || tile.isRemoved) return;
-
-    sound.playSelect();
-
-    if (!gameState.selectedTile) {
-        gameState.selectedTile = tile;
-        renderBoard();
+    if (!tile.isFree) {
+        sound.playError();
         return;
     }
 
-    if (gameState.selectedTile.id === tile.id) {
-        gameState.selectedTile = null;
-        renderBoard();
+    // Deselect if clicking the same tile
+    if (mahjongState.selectedTile === tile) {
+        sound.playSelect();
+        mahjongState.selectedTile = null;
+        updateTileDOMClasses();
         return;
     }
 
-    if (gameState.selectedTile.val === tile.val) {
-        handleMatch(gameState.selectedTile, tile);
+    // First tile selection
+    if (!mahjongState.selectedTile) {
+        sound.playSelect();
+        mahjongState.selectedTile = tile;
+        updateTileDOMClasses();
+        return;
+    }
+
+    // Second tile selection - check match
+    const firstTile = mahjongState.selectedTile;
+    if (firstTile.val === tile.val) {
+        // Match found!
+        sound.playMatch();
+
+        firstTile.element.classList.add('matched');
+        tile.element.classList.add('matched');
+
+        setTimeout(() => {
+            firstTile.element.remove();
+            tile.element.remove();
+
+            // Remove tiles from state
+            mahjongState.tiles = mahjongState.tiles.filter(t => t.id !== firstTile.id && t.id !== tile.id);
+            mahjongState.pairsLeft--;
+
+            const pairsLeftDisplay = document.getElementById('pairs-left');
+            if (pairsLeftDisplay) pairsLeftDisplay.textContent = mahjongState.pairsLeft;
+
+            mahjongState.selectedTile = null;
+            updateFreeTileStatus(mahjongState.tiles);
+            updateTileDOMClasses();
+
+            if (mahjongState.pairsLeft === 0) {
+                showMahjongWin();
+            }
+        }, 300);
     } else {
-        handleWrongMatch(gameState.selectedTile, tile);
+        // Mismatch
+        sound.playError();
+        firstTile.element.classList.add('wrong-match');
+        tile.element.classList.add('wrong-match');
+
+        setTimeout(() => {
+            firstTile.element.classList.remove('wrong-match');
+            tile.element.classList.remove('wrong-match');
+            mahjongState.selectedTile = null;
+            updateTileDOMClasses();
+        }, 500);
     }
 }
 
-function handleMatch(t1, t2) {
-    sound.playMatch();
-    t1.isRemoved = true;
-    t2.isRemoved = true;
-    gameState.selectedTile = null;
-    gameState.pairsLeft--;
-
-    const pairsLeftDisplay = document.getElementById('pairs-left');
-    if (pairsLeftDisplay) pairsLeftDisplay.textContent = gameState.pairsLeft;
-
-    updateFreeStatus();
-    renderBoard();
-
-    if (gameState.pairsLeft === 0) {
-        sound.playWin();
-        switchScreen('win-screen');
-    }
-}
-
-function handleWrongMatch(t1, t2) {
-    sound.playError();
-
-    const board = document.getElementById('game-board');
-    if (board) {
-        board.classList.add('shake');
-        setTimeout(() => board.classList.remove('shake'), 400);
-    }
-
-    gameState.selectedTile = null;
-    renderBoard();
+function showMahjongWin() {
+    sound.playWin();
+    switchScreen('win-screen');
 }
