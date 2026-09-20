@@ -8,12 +8,14 @@ let mahjongState = {
     tiles: [],
     selectedTile: null,
     pairsLeft: 26,
-    currentGrade: 2
+    currentGrade: 2,
+    isProcessing: false
 };
 
 export function initMahjongGame(grade = 2) {
     mahjongState.currentGrade = grade;
     mahjongState.selectedTile = null;
+    mahjongState.isProcessing = false;
 
     const seed = levelSeeds[grade] || levelSeeds[2];
     const generatedPairs = generateUniquePairs(seed, 26);
@@ -31,18 +33,16 @@ export function initMahjongGame(grade = 2) {
     }));
 
     // Solvability-Guaranteed Pair Placement:
-    // Repeatedly pick two currently free available slots and place a matching pair.
-    // This ensures that at least one solvable solution path exists backwards.
+    // Repeatedly pick two currently free available unassigned slots and place a matching pair.
     const unassignedTiles = [...tiles];
     for (let p = 0; p < generatedPairs.length; p++) {
         const pairData = generatedPairs[p];
-        updateFreeTileStatus(unassignedTiles);
+        updateUnassignedFreeStatus(unassignedTiles);
 
         const freeUnassigned = unassignedTiles.filter(t => t.isFree && t.val === null);
 
         let tileA, tileB;
         if (freeUnassigned.length >= 2) {
-            // Pick two random free unassigned tiles
             const idxA = Math.floor(Math.random() * freeUnassigned.length);
             tileA = freeUnassigned[idxA];
             freeUnassigned.splice(idxA, 1);
@@ -50,7 +50,6 @@ export function initMahjongGame(grade = 2) {
             const idxB = Math.floor(Math.random() * freeUnassigned.length);
             tileB = freeUnassigned[idxB];
         } else {
-            // Fallback if constrained: pick any remaining unassigned tiles
             const remaining = unassignedTiles.filter(t => t.val === null);
             tileA = remaining[0];
             tileB = remaining[1] || remaining[0];
@@ -81,11 +80,44 @@ export function initMahjongGame(grade = 2) {
     switchScreen('game-screen');
 }
 
+function updateUnassignedFreeStatus(tileList) {
+    tileList.forEach(tile => {
+        if (!tile) return;
+
+        const isCovered = tileList.some(other =>
+            other.id !== tile.id &&
+            other.layer === tile.layer + 1 &&
+            Math.abs(other.row - tile.row) < 1 &&
+            Math.abs(other.col - tile.col) < 1
+        );
+
+        if (isCovered) {
+            tile.isFree = false;
+            return;
+        }
+
+        const hasLeftNeighbor = tileList.some(other =>
+            other.id !== tile.id &&
+            other.layer === tile.layer &&
+            Math.abs(other.row - tile.row) < 1 &&
+            other.col === tile.col - 1
+        );
+
+        const hasRightNeighbor = tileList.some(other =>
+            other.id !== tile.id &&
+            other.layer === tile.layer &&
+            Math.abs(other.row - tile.row) < 1 &&
+            other.col === tile.col + 1
+        );
+
+        tile.isFree = !(hasLeftNeighbor && hasRightNeighbor);
+    });
+}
+
 function updateFreeTileStatus(tileList) {
     tileList.forEach(tile => {
         if (!tile || tile.val === undefined) return;
 
-        // 1. Check if covered by tile on layer directly above
         const isCovered = tileList.some(other =>
             other.val !== null &&
             other.layer === tile.layer + 1 &&
@@ -98,7 +130,6 @@ function updateFreeTileStatus(tileList) {
             return;
         }
 
-        // 2. Check left and right neighbor blocking
         const hasLeftNeighbor = tileList.some(other =>
             other.val !== null &&
             other.layer === tile.layer &&
@@ -123,7 +154,6 @@ function renderMahjongBoard() {
 
     board.innerHTML = '';
 
-    // Auto-calculate board container dimensions so 3D layered pyramid centers cleanly
     let maxCol = 0;
     let maxRow = 0;
     gameLayout.forEach(t => {
@@ -140,7 +170,6 @@ function renderMahjongBoard() {
         const tileElem = document.createElement('div');
         tileElem.className = 'tile';
 
-        // 3D Grid positioning with offsets per layer
         const posX = tile.col * 70 + (tile.layer * 6);
         const posY = tile.row * 85 - (tile.layer * 6);
         const zIndex = tile.layer * 10 + Math.floor(tile.row);
@@ -173,12 +202,11 @@ function updateTileDOMClasses() {
 }
 
 function onTileClick(tile) {
-    if (!tile.isFree) {
+    if (!tile.isFree || mahjongState.isProcessing) {
         sound.playError();
         return;
     }
 
-    // Deselect if clicking the same tile
     if (mahjongState.selectedTile === tile) {
         sound.playSelect();
         mahjongState.selectedTile = null;
@@ -186,7 +214,6 @@ function onTileClick(tile) {
         return;
     }
 
-    // First tile selection
     if (!mahjongState.selectedTile) {
         sound.playSelect();
         mahjongState.selectedTile = tile;
@@ -194,10 +221,9 @@ function onTileClick(tile) {
         return;
     }
 
-    // Second tile selection - check match
+    mahjongState.isProcessing = true;
     const firstTile = mahjongState.selectedTile;
     if (firstTile.val === tile.val) {
-        // Match found!
         sound.playMatch();
 
         firstTile.element.classList.add('matched');
@@ -207,7 +233,6 @@ function onTileClick(tile) {
             firstTile.element.remove();
             tile.element.remove();
 
-            // Remove tiles from state
             mahjongState.tiles = mahjongState.tiles.filter(t => t.id !== firstTile.id && t.id !== tile.id);
             mahjongState.pairsLeft--;
 
@@ -215,6 +240,7 @@ function onTileClick(tile) {
             if (pairsLeftDisplay) pairsLeftDisplay.textContent = mahjongState.pairsLeft;
 
             mahjongState.selectedTile = null;
+            mahjongState.isProcessing = false;
             updateFreeTileStatus(mahjongState.tiles);
             updateTileDOMClasses();
 
@@ -223,7 +249,6 @@ function onTileClick(tile) {
             }
         }, 300);
     } else {
-        // Mismatch
         sound.playError();
         firstTile.element.classList.add('wrong-match');
         tile.element.classList.add('wrong-match');
@@ -232,6 +257,7 @@ function onTileClick(tile) {
             firstTile.element.classList.remove('wrong-match');
             tile.element.classList.remove('wrong-match');
             mahjongState.selectedTile = null;
+            mahjongState.isProcessing = false;
             updateTileDOMClasses();
         }, 500);
     }

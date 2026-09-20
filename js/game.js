@@ -4,7 +4,7 @@ import { grade2Settings } from './core/levels.js';
 import { switchScreen } from './core/utils.js';
 import { initMahjongGame } from './games/mahjong.js';
 import { startDuel } from './games/duel.js';
-import { startConquest, passConquestTurn } from './games/conquest.js';
+import { startConquest, passConquestTurn, stopConquestTimer } from './games/conquest.js';
 import { startRace, rollRaceDice } from './games/race.js';
 import { startTug } from './games/tug.js';
 import { startCarRace } from './games/carrace.js';
@@ -139,7 +139,10 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
     backMenuButtons.forEach(btnId => {
         const btn = document.getElementById(btnId);
-        if (btn) btn.addEventListener('click', () => switchScreen('main-menu'));
+        if (btn) btn.addEventListener('click', () => {
+            stopConquestTimer();
+            switchScreen('main-menu');
+        });
     });
 
     // Play Again Buttons

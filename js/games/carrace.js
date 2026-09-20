@@ -80,6 +80,7 @@ function updateCarPlayerUI(pId) {
 function submitCarAnswer(pId, userValStr) {
     const player = carRaceState.players[pId];
     if (!player || player.isPenalized) return;
+    if (!userValStr || userValStr.trim() === '' || userValStr === '-') return;
 
     const userVal = parseInt(userValStr, 10);
     const expected = player.currentPair.value;

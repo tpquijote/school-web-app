@@ -16,6 +16,13 @@ let conquestState = {
     pairsLeft: 18
 };
 
+export function stopConquestTimer() {
+    if (conquestState.timerInterval) {
+        clearInterval(conquestState.timerInterval);
+        conquestState.timerInterval = null;
+    }
+}
+
 export function startConquest(grade = 2) {
     conquestState.currentGrade = grade;
     conquestState.currentPlayer = 1;
@@ -24,7 +31,7 @@ export function startConquest(grade = 2) {
     conquestState.isProcessing = false;
     conquestState.pairsLeft = 18;
 
-    if (conquestState.timerInterval) clearInterval(conquestState.timerInterval);
+    stopConquestTimer();
 
     const seed = levelSeeds[grade] || levelSeeds[2];
     const generatedPairs = generateUniquePairs(seed, 18);
@@ -148,7 +155,7 @@ function checkConquestMatch() {
         renderConquestBoard();
 
         if (checkConquestWin()) {
-            showConquestWin();
+            showConquestWin(conquestState.currentPlayer);
             return;
         }
 
@@ -188,7 +195,7 @@ function showConquestMessage(text, color = 'var(--accent-color)') {
 }
 
 function startConquestTimer() {
-    if (conquestState.timerInterval) clearInterval(conquestState.timerInterval);
+    stopConquestTimer();
     conquestState.timeLeft = grade2Settings.conquestTimerLimit || 30;
 
     const timerBar = document.getElementById('conquest-timer-bar');
@@ -207,7 +214,7 @@ function startConquestTimer() {
         }
 
         if (conquestState.timeLeft <= 0) {
-            clearInterval(conquestState.timerInterval);
+            stopConquestTimer();
             sound.playError();
             showConquestMessage("Lejárt az idő! Passz.", "#ff9f1c");
             conquestState.selectedTiles = [];
@@ -250,8 +257,8 @@ function checkConquestWin() {
     return full;
 }
 
-function showConquestWin() {
-    if (conquestState.timerInterval) clearInterval(conquestState.timerInterval);
+function showConquestWin(connect4Winner = null) {
+    stopConquestTimer();
     sound.playWin();
 
     const title = document.getElementById('conquest-winner-title');
@@ -262,10 +269,16 @@ function showConquestWin() {
     if (p1Final) p1Final.textContent = conquestState.scores[1];
     if (p2Final) p2Final.textContent = conquestState.scores[2];
 
-    if (conquestState.scores[1] > conquestState.scores[2]) {
+    let winner = connect4Winner;
+    if (winner === null) {
+        if (conquestState.scores[1] > conquestState.scores[2]) winner = 1;
+        else if (conquestState.scores[2] > conquestState.scores[1]) winner = 2;
+    }
+
+    if (winner === 1) {
         if (title) title.textContent = "Kék Játékos Nyert!";
         if (text) text.textContent = "Gratulálunk a területhódításhoz!";
-    } else if (conquestState.scores[2] > conquestState.scores[1]) {
+    } else if (winner === 2) {
         if (title) title.textContent = "Piros Játékos Nyert!";
         if (text) text.textContent = "Gratulálunk a területhódításhoz!";
     } else {
