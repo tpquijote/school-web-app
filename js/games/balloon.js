@@ -145,18 +145,56 @@ function nextQuestion() {
     spawnInitialBalloons();
 }
 
+function getNonOverlappingPosX() {
+    const now = Date.now();
+    // Consider balloons spawned in the last 3.5 seconds as near the bottom
+    const recentPositions = gameState.balloons
+        .filter(b => b.element && b.element.parentNode && (now - b.spawnTime) < 3500)
+        .map(b => b.posX);
+
+    const LANES = [10, 25, 40, 55, 70, 82];
+    let bestX = LANES[getRandomInt(0, LANES.length - 1)];
+    let maxMinDist = -1;
+
+    // Try all lanes to find the one furthest from recently spawned balloons
+    for (const lane of LANES) {
+        const offset = getRandomInt(-2, 2);
+        const candidateX = Math.min(85, Math.max(8, lane + offset));
+
+        if (recentPositions.length === 0) {
+            return candidateX;
+        }
+
+        let minDist = Math.min(...recentPositions.map(px => Math.abs(px - candidateX)));
+        if (minDist > maxMinDist) {
+            maxMinDist = minDist;
+            bestX = candidateX;
+        }
+    }
+
+    return bestX;
+}
+
 function spawnInitialBalloons() {
     const container = document.getElementById('balloon-container');
     if (container) container.innerHTML = '';
+    gameState.balloons = [];
 
-    // Spawn 1 correct balloon + 3 wrong balloons
-    spawnBalloon(true);
-    for (let i = 0; i < 3; i++) {
-        spawnBalloon(false);
-    }
+    // Use 4 distinct lanes for initial balloons to guarantee no overlap
+    const LANES = [10, 28, 46, 64, 82];
+    // Shuffle lanes
+    const shuffledLanes = [...LANES].sort(() => Math.random() - 0.5);
+
+    const initialTypes = [true, false, false, false];
+    initialTypes.forEach((isCorrect, index) => {
+        const lane = shuffledLanes[index] || 10;
+        const posX = Math.min(85, Math.max(8, lane + getRandomInt(-2, 2)));
+        const delay = index * 0.4; // Stagger vertical start position slightly
+        spawnBalloon(isCorrect, posX, delay);
+    });
 }
 
-function spawnBalloon(forceCorrect = null) {
+function spawnBalloon(forceCorrect = null, preferredX = null, animDelaySeconds = 0) {
     if (!gameState.isRunning || !gameState.activeTarget) return;
 
     const container = document.getElementById('balloon-container');
@@ -185,9 +223,11 @@ function spawnBalloon(forceCorrect = null) {
     const balloonElem = document.createElement('div');
     balloonElem.className = 'floating-balloon';
 
-    // Random position across width safely inside viewport (8% to 80%)
-    const posX = getRandomInt(8, 80);
+    const posX = preferredX !== null ? preferredX : getNonOverlappingPosX();
     balloonElem.style.left = `${posX}%`;
+    if (animDelaySeconds > 0) {
+        balloonElem.style.animationDelay = `${animDelaySeconds}s`;
+    }
 
     // Random color
     const color = BALLOON_COLORS[getRandomInt(0, BALLOON_COLORS.length - 1)];
@@ -212,7 +252,9 @@ function spawnBalloon(forceCorrect = null) {
     const balloonObj = {
         element: balloonElem,
         text: balloonText,
-        isCorrect: isCorrect
+        isCorrect: isCorrect,
+        posX: posX,
+        spawnTime: Date.now()
     };
 
     balloonElem.addEventListener('click', (e) => {
