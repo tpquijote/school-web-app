@@ -21,6 +21,8 @@
                     <button class="btn mode-btn" id="race-mode-btn" data-mode="race" style="background: #a29bfe; box-shadow: 0 6px 0 #6c5ce7;">Matematikai Kaland (Társasjáték)</button>
                     <button class="btn mode-btn" id="tug-mode-btn" data-mode="tug" style="background: #00b4d8; box-shadow: 0 6px 0 #0077b6;">Kötélhúzás (Speed-Matek)</button>
                     <button class="btn mode-btn" id="car-race-mode-btn" data-mode="carRace" style="background: #fdcb6e; box-shadow: 0 6px 0 #e1b12c;">Autóverseny (Speed-Párbaj)</button>
+                    <button class="btn mode-btn" id="balloon-mode-btn" data-mode="balloon" style="background: #ff7675; box-shadow: 0 6px 0 #d63031;">Lufi Vadászat (Szálló lufik)</button>
+                    <button class="btn mode-btn" id="projector-mode-btn" data-mode="projector" style="background: #00cec9; box-shadow: 0 6px 0 #00b894; grid-column: span 2;">Kivetítő Mód (20 Művelet)</button>
                 </div>
             </div>
         </div>
@@ -37,7 +39,13 @@
                             Számkör limit: <span id="limit-val">100</span>
                         </label>
                         <div class="slider-container">
-                            <input type="range" id="limit-slider" min="10" max="100" step="10" value="100" class="modern-slider">
+                            <input type="range" id="limit-slider" min="10" max="1000" step="10" value="100" class="modern-slider">
+                        </div>
+                        <div class="limit-quick-selectors" style="display: flex; gap: 8px; margin-top: 8px; width: 100%;">
+                            <button type="button" class="limit-quick-btn" data-val="20" style="flex: 1; padding: 6px; font-weight: 700; border-radius: 8px; font-size: 0.9rem;">20</button>
+                            <button type="button" class="limit-quick-btn active" data-val="100" style="flex: 1; padding: 6px; font-weight: 700; border-radius: 8px; font-size: 0.9rem;">100</button>
+                            <button type="button" class="limit-quick-btn" data-val="500" style="flex: 1; padding: 6px; font-weight: 700; border-radius: 8px; font-size: 0.9rem;">500</button>
+                            <button type="button" class="limit-quick-btn" data-val="1000" style="flex: 1; padding: 6px; font-weight: 700; border-radius: 8px; font-size: 0.9rem;">1000</button>
                         </div>
                     </div>
 
@@ -48,6 +56,16 @@
                             <button class="op-toggle-btn active" data-op="-">-</button>
                             <button class="op-toggle-btn active" data-op="*">×</button>
                             <button class="op-toggle-btn active" data-op="/">÷</button>
+                        </div>
+                    </div>
+
+                    <div class="settings-group" id="mahjong-options-group">
+                        <span class="settings-label">Mahjong kockák száma:</span>
+                        <div class="mahjong-count-selectors" style="display: flex; gap: 10px; margin-top: 8px; width: 100%;">
+                            <button type="button" class="mahjong-count-btn" data-count="16" style="flex: 1; padding: 10px; font-weight: 700; border-radius: 12px;">16</button>
+                            <button type="button" class="mahjong-count-btn" data-count="24" style="flex: 1; padding: 10px; font-weight: 700; border-radius: 12px;">24</button>
+                            <button type="button" class="mahjong-count-btn" data-count="36" style="flex: 1; padding: 10px; font-weight: 700; border-radius: 12px;">36</button>
+                            <button type="button" class="mahjong-count-btn active" data-count="52" style="flex: 1; padding: 10px; font-weight: 700; border-radius: 12px;">52</button>
                         </div>
                     </div>
 
@@ -99,6 +117,35 @@
                             <button type="button" class="player-count-btn" data-count="3" style="flex: 1; padding: 10px; font-weight: 700; border-radius: 12px;">3 Játékos</button>
                             <button type="button" class="player-count-btn" data-count="4" style="flex: 1; padding: 10px; font-weight: 700; border-radius: 12px;">4 Játékos</button>
                         </div>
+                    </div>
+
+                    <div class="settings-group" id="balloon-options-group" style="display: none;">
+                        <span class="settings-label">Lufik mozgásiránya:</span>
+                        <div style="display: flex; gap: 10px; margin-top: 8px; width: 100%;">
+                            <button type="button" id="balloon-dir-up" class="orientation-btn active" style="flex: 1; padding: 10px; font-weight: 700; border-radius: 12px;">Felfelé ⬆️</button>
+                            <button type="button" id="balloon-dir-down" class="orientation-btn" style="flex: 1; padding: 10px; font-weight: 700; border-radius: 12px;">Lefelé ⬇️</button>
+                        </div>
+
+                        <span class="settings-label" style="margin-top: 10px;">Fordított mód:</span>
+                        <label class="switch-container">
+                            <input type="checkbox" id="balloon-reverse-enable" class="switch-input">
+                            <span class="switch-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="settings-group" id="projector-options-group" style="display: none;">
+                        <label for="projector-timer-slider" class="settings-label">
+                            Műveletenkénti idő limit: <span id="projector-timer-val">13</span> mp
+                        </label>
+                        <div class="slider-container">
+                            <input type="range" id="projector-timer-slider" min="3" max="60" step="1" value="13" class="modern-slider">
+                        </div>
+
+                        <span class="settings-label" style="margin-top: 10px;">Állatos visszaszámláló (békák):</span>
+                        <label class="switch-container">
+                            <input type="checkbox" id="projector-animal-enable" class="switch-input" checked>
+                            <span class="switch-slider"></span>
+                        </label>
                     </div>
                 </div>
 
@@ -759,6 +806,92 @@
                 <div class="win-actions">
                     <button id="car-race-play-again-btn" class="btn">Új játék</button>
                     <button id="car-race-win-back-to-menu-btn" class="btn secondary-btn">Főmenü</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Projector Mode Screen -->
+        <div id="projector-screen" class="screen">
+            <header class="game-header">
+                <div class="stats">
+                    <span>Kivetítő Mód</span> |
+                    <span>Művelet: <span id="projector-q-index">1 / 20</span></span>
+                </div>
+                <button id="projector-back-btn" class="btn small-btn">Vissza</button>
+            </header>
+
+            <div class="projector-content-container" style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 90%; max-width: 900px; margin: 80px auto 0 auto; gap: 2rem;">
+                <!-- Animal Countdown Timer bar -->
+                <div class="animal-timer-wrapper" style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                    <div id="projector-animal-timer" class="animal-timer-bar" style="display: flex; gap: 8px; font-size: 2.2rem; flex-wrap: wrap; justify-content: center;">
+                        <!-- Animal icons will be injected dynamically -->
+                    </div>
+                    <div id="projector-timer-text" style="font-size: 1.8rem; font-weight: 900; color: #ffe66d;">13 mp</div>
+                </div>
+
+                <!-- Equation Display -->
+                <div class="projector-equation-card" style="background: rgba(255,255,255,0.1); border: 3px solid rgba(255,255,255,0.2); border-radius: 24px; padding: 2.5rem 4rem; backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+                    <div id="projector-equation" style="font-size: 4.5rem; font-weight: 900; color: #ffffff; text-shadow: 0 4px 10px rgba(0,0,0,0.5); text-align: center;">
+                        15 + 7 = ?
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Balloon Game Screen -->
+        <div id="balloon-screen" class="screen">
+            <header class="game-header">
+                <div class="stats">
+                    <span>Lufi Vadászat</span> |
+                    <span>Pontszám: <span id="balloon-score">0 / 10</span></span>
+                </div>
+                <button id="balloon-back-btn" class="btn small-btn">Vissza</button>
+            </header>
+
+            <div style="display: flex; flex-direction: column; align-items: center; width: 100%; height: calc(100vh - 60px); margin-top: 60px; position: relative; overflow: hidden;">
+                <!-- Target Header Card -->
+                <div style="background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.3); border-radius: 20px; padding: 1rem 2.5rem; margin-top: 10px; backdrop-filter: blur(10px); z-index: 5;">
+                    <div id="balloon-target-display" style="font-size: 3rem; font-weight: 900; color: #ffe66d; text-shadow: 0 3px 6px rgba(0,0,0,0.4);">
+                        8 + 5 = ?
+                    </div>
+                </div>
+
+                <!-- Floating Balloons Arena -->
+                <div id="balloon-arena" style="position: relative; width: 100%; flex: 1; overflow: hidden;">
+                    <!-- Floating balloons dynamically injected here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Balloon Win Screen -->
+        <div id="balloon-win-screen" class="screen">
+            <div class="menu-content">
+                <h1>Sikeres Vadászat! 🎉</h1>
+                <p class="subtitle">Minden lufit sikeresen kipukkasztottál!</p>
+                <div class="win-actions">
+                    <button id="balloon-play-again-btn" class="btn">Új játék</button>
+                    <button id="balloon-win-back-to-menu-btn" class="btn secondary-btn">Főmenü</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Projector Win / Solution Summary Screen -->
+        <div id="projector-win-screen" class="screen">
+            <div class="menu-content" style="max-width: 700px; width: 95%; max-height: 85vh; overflow-y: auto;">
+                <h1>Megoldások (20/20)</h1>
+                <p class="subtitle">Itt vannak a helyes eredmények az ellenőrzéshez:</p>
+
+                <div class="projector-summary-container" style="background: rgba(0,0,0,0.2); border-radius: 16px; padding: 1rem; margin-bottom: 1.5rem;">
+                    <table style="width: 100%; border-collapse: collapse;" id="projector-summary-table">
+                        <tbody id="projector-summary-table-body">
+                            <!-- Injected dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="win-actions">
+                    <button id="projector-play-again-btn" class="btn">Új sorozat</button>
+                    <button id="projector-win-back-to-menu-btn" class="btn secondary-btn">Főmenü</button>
                 </div>
             </div>
         </div>

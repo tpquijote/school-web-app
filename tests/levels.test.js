@@ -29,6 +29,21 @@ describe('Level Generators ES Module (js/core/levels.js)', () => {
         }
     });
 
+    test('Grade 2 settings limit works for 500 and 1000', () => {
+        grade2Settings.limit = 500;
+        grade2Settings.ops = ['+', '-'];
+        for (let i = 0; i < 20; i++) {
+            const pair = levelSeeds[2].generatePair();
+            assert.ok(pair.value <= 500, `Value ${pair.value} should be <= 500`);
+        }
+
+        grade2Settings.limit = 1000;
+        for (let i = 0; i < 20; i++) {
+            const pair = levelSeeds[2].generatePair();
+            assert.ok(pair.value <= 1000, `Value ${pair.value} should be <= 1000`);
+        }
+    });
+
     test('Mahjong layout generator outputs 52 tiles', () => {
         assert.ok(Array.isArray(gameLayout), 'gameLayout should be an array');
         assert.equal(gameLayout.length, 52, 'gameLayout should have 52 tiles');
