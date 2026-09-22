@@ -6,7 +6,11 @@ export const grade2Settings = {
     memoryTime: 2.0,
     conquestTimerEnabled: false,
     conquestTimerLimit: 30,
-    mahjongTileCount: 52
+    mahjongTileCount: 52,
+    projectorTimerLimit: 13,
+    projectorAnimalTimer: true,
+    balloonDirection: 'up',
+    balloonReverse: false
 };
 
 // Expose settings on window for backwards compatibility if needed

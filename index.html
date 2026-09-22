@@ -41,6 +41,12 @@
                         <div class="slider-container">
                             <input type="range" id="limit-slider" min="10" max="1000" step="10" value="100" class="modern-slider">
                         </div>
+                        <div class="limit-quick-selectors" style="display: flex; gap: 8px; margin-top: 8px; width: 100%;">
+                            <button type="button" class="limit-quick-btn" data-val="20" style="flex: 1; padding: 6px; font-weight: 700; border-radius: 8px; font-size: 0.9rem;">20</button>
+                            <button type="button" class="limit-quick-btn active" data-val="100" style="flex: 1; padding: 6px; font-weight: 700; border-radius: 8px; font-size: 0.9rem;">100</button>
+                            <button type="button" class="limit-quick-btn" data-val="500" style="flex: 1; padding: 6px; font-weight: 700; border-radius: 8px; font-size: 0.9rem;">500</button>
+                            <button type="button" class="limit-quick-btn" data-val="1000" style="flex: 1; padding: 6px; font-weight: 700; border-radius: 8px; font-size: 0.9rem;">1000</button>
+                        </div>
                     </div>
 
                     <div class="settings-group">
@@ -132,8 +138,14 @@
                             Műveletenkénti idő limit: <span id="projector-timer-val">13</span> mp
                         </label>
                         <div class="slider-container">
-                            <input type="range" id="projector-timer-slider" min="3" max="13" step="1" value="13" class="modern-slider">
+                            <input type="range" id="projector-timer-slider" min="3" max="60" step="1" value="13" class="modern-slider">
                         </div>
+
+                        <span class="settings-label" style="margin-top: 10px;">Állatos visszaszámláló (békák):</span>
+                        <label class="switch-container">
+                            <input type="checkbox" id="projector-animal-enable" class="switch-input" checked>
+                            <span class="switch-slider"></span>
+                        </label>
                     </div>
                 </div>
 

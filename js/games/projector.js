@@ -96,6 +96,11 @@ function updateAnimalTimerUI() {
 
     if (!frogsContainer) return;
 
+    const isAnimalEnabled = grade2Settings.projectorAnimalTimer !== false;
+    frogsContainer.style.display = isAnimalEnabled ? 'flex' : 'none';
+
+    if (!isAnimalEnabled) return;
+
     frogsContainer.innerHTML = '';
     const totalAnimals = projectorState.timerLimit;
     const remainingAnimals = projectorState.timeRemaining;

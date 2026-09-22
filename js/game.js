@@ -67,12 +67,31 @@ document.addEventListener('DOMContentLoaded', () => {
     // Settings Controls
     const limitSlider = document.getElementById('limit-slider');
     const limitVal = document.getElementById('limit-val');
+    const updateLimitUI = (val) => {
+        grade2Settings.limit = val;
+        if (limitSlider) limitSlider.value = val;
+        if (limitVal) limitVal.textContent = val;
+        document.querySelectorAll('.limit-quick-btn').forEach(btn => {
+            if (parseInt(btn.getAttribute('data-val'), 10) === val) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+    };
+
     if (limitSlider) {
         limitSlider.addEventListener('input', (e) => {
-            grade2Settings.limit = parseInt(e.target.value, 10);
-            if (limitVal) limitVal.textContent = grade2Settings.limit;
+            updateLimitUI(parseInt(e.target.value, 10));
         });
     }
+
+    document.querySelectorAll('.limit-quick-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const val = parseInt(e.currentTarget.getAttribute('data-val'), 10);
+            if (val) updateLimitUI(val);
+        });
+    });
 
     document.querySelectorAll('.op-toggle-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -121,6 +140,13 @@ document.addEventListener('DOMContentLoaded', () => {
         projectorSlider.addEventListener('input', (e) => {
             grade2Settings.projectorTimerLimit = parseInt(e.target.value, 10);
             if (projectorVal) projectorVal.textContent = grade2Settings.projectorTimerLimit;
+        });
+    }
+
+    const projectorAnimalEnable = document.getElementById('projector-animal-enable');
+    if (projectorAnimalEnable) {
+        projectorAnimalEnable.addEventListener('change', (e) => {
+            grade2Settings.projectorAnimalTimer = e.target.checked;
         });
     }
 
