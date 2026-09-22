@@ -1,7 +1,7 @@
 // js/games/mahjong.js
 
 import { sound } from '../core/audio.js';
-import { levelSeeds, gameLayout } from '../core/levels.js';
+import { levelSeeds, generateLayoutGrid, grade2Settings } from '../core/levels.js';
 import { generateUniquePairs, switchScreen } from '../core/utils.js';
 
 let mahjongState = {
@@ -9,7 +9,8 @@ let mahjongState = {
     selectedTile: null,
     pairsLeft: 26,
     currentGrade: 2,
-    isProcessing: false
+    isProcessing: false,
+    layoutTemplate: []
 };
 
 export function initMahjongGame(grade = 2) {
@@ -17,11 +18,16 @@ export function initMahjongGame(grade = 2) {
     mahjongState.selectedTile = null;
     mahjongState.isProcessing = false;
 
-    const seed = levelSeeds[grade] || levelSeeds[2];
-    const generatedPairs = generateUniquePairs(seed, 26);
+    const tileCount = grade2Settings.mahjongTileCount || 52;
+    const pairCount = tileCount / 2;
+    mahjongState.pairsLeft = pairCount;
 
-    // Create 52 blank layout tiles based on template
-    const tiles = gameLayout.map((layout, idx) => ({
+    const seed = levelSeeds[grade] || levelSeeds[2];
+    const generatedPairs = generateUniquePairs(seed, pairCount);
+    mahjongState.layoutTemplate = generateLayoutGrid(tileCount);
+
+    // Create blank layout tiles based on selected tile count template
+    const tiles = mahjongState.layoutTemplate.map((layout, idx) => ({
         id: idx,
         layer: layout.l,
         row: layout.r,
@@ -156,7 +162,8 @@ function renderMahjongBoard() {
 
     let maxCol = 0;
     let maxRow = 0;
-    gameLayout.forEach(t => {
+    const template = mahjongState.layoutTemplate.length > 0 ? mahjongState.layoutTemplate : generateLayoutGrid(52);
+    template.forEach(t => {
         if (t.c > maxCol) maxCol = t.c;
         if (t.r > maxRow) maxRow = t.r;
     });

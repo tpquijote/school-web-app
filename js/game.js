@@ -8,6 +8,8 @@ import { startConquest, passConquestTurn, stopConquestTimer } from './games/conq
 import { startRace, rollRaceDice } from './games/race.js';
 import { startTug } from './games/tug.js';
 import { startCarRace } from './games/carrace.js';
+import { startProjectorMode, stopProjectorTimer } from './games/projector.js';
+import { startBalloonGame, stopBalloonGame } from './games/balloon.js';
 
 let selectedMode = 'mahjong';
 let selectedGrade = 2;
@@ -36,14 +38,29 @@ document.addEventListener('DOMContentLoaded', () => {
             const raceGroup = document.getElementById('race-options-group');
             const tugGroup = document.getElementById('tug-options-group');
             const carGroup = document.getElementById('car-race-options-group');
+            const projectorGroup = document.getElementById('projector-options-group');
+            const balloonGroup = document.getElementById('balloon-options-group');
             
+            const mahjongGroup = document.getElementById('mahjong-options-group');
+            if (mahjongGroup) mahjongGroup.style.display = selectedMode === 'mahjong' ? 'block' : 'none';
             if (memoryGroup) memoryGroup.style.display = selectedMode === 'duel' ? 'block' : 'none';
             if (conquestGroup) conquestGroup.style.display = selectedMode === 'conquest' ? 'block' : 'none';
             if (raceGroup) raceGroup.style.display = selectedMode === 'race' ? 'block' : 'none';
             if (tugGroup) tugGroup.style.display = selectedMode === 'tug' ? 'block' : 'none';
             if (carGroup) carGroup.style.display = selectedMode === 'carRace' ? 'block' : 'none';
+            if (projectorGroup) projectorGroup.style.display = selectedMode === 'projector' ? 'block' : 'none';
+            if (balloonGroup) balloonGroup.style.display = selectedMode === 'balloon' ? 'block' : 'none';
             
             switchScreen('settings-screen');
+        });
+    });
+
+    // Mahjong Tile Count Selector
+    document.querySelectorAll('.mahjong-count-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.mahjong-count-btn').forEach(b => b.classList.remove('active'));
+            e.currentTarget.classList.add('active');
+            grade2Settings.mahjongTileCount = parseInt(e.currentTarget.getAttribute('data-count'), 10);
         });
     });
 
@@ -98,6 +115,30 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const projectorSlider = document.getElementById('projector-timer-slider');
+    const projectorVal = document.getElementById('projector-timer-val');
+    if (projectorSlider) {
+        projectorSlider.addEventListener('input', (e) => {
+            grade2Settings.projectorTimerLimit = parseInt(e.target.value, 10);
+            if (projectorVal) projectorVal.textContent = grade2Settings.projectorTimerLimit;
+        });
+    }
+
+    // Balloon Direction and Reverse Settings
+    document.getElementById('balloon-dir-up')?.addEventListener('click', (e) => {
+        document.getElementById('balloon-dir-up').classList.add('active');
+        document.getElementById('balloon-dir-down').classList.remove('active');
+        grade2Settings.balloonDirection = 'up';
+    });
+    document.getElementById('balloon-dir-down')?.addEventListener('click', (e) => {
+        document.getElementById('balloon-dir-down').classList.add('active');
+        document.getElementById('balloon-dir-up').classList.remove('active');
+        grade2Settings.balloonDirection = 'down';
+    });
+    document.getElementById('balloon-reverse-enable')?.addEventListener('change', (e) => {
+        grade2Settings.balloonReverse = e.target.checked;
+    });
+
     // Tug & Car Race Player Count Selectors
     let selectedTugPlayers = 2;
     document.querySelectorAll('.tug-player-count-btn').forEach(btn => {
@@ -127,20 +168,24 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (selectedMode === 'race') startRace(selectedGrade);
             else if (selectedMode === 'tug') startTug(selectedGrade, selectedTugPlayers);
             else if (selectedMode === 'carRace') startCarRace(selectedGrade, selectedCarPlayers);
+            else if (selectedMode === 'projector') startProjectorMode(selectedGrade);
+            else if (selectedMode === 'balloon') startBalloonGame(selectedGrade);
         });
     }
 
     // Back Buttons
     const backMenuButtons = [
         'settings-back-btn', 'back-btn', 'duel-back-btn', 'conquest-back-btn',
-        'race-back-btn', 'tug-back-btn', 'car-race-back-btn',
+        'race-back-btn', 'tug-back-btn', 'car-race-back-btn', 'projector-back-btn', 'balloon-back-btn',
         'win-back-to-menu-btn', 'duel-win-back-to-menu-btn', 'conquest-win-back-to-menu-btn',
-        'race-win-back-to-menu-btn', 'tug-win-back-to-menu-btn', 'car-race-win-back-to-menu-btn'
+        'race-win-back-to-menu-btn', 'tug-win-back-to-menu-btn', 'car-race-win-back-to-menu-btn', 'projector-win-back-to-menu-btn', 'balloon-win-back-to-menu-btn'
     ];
     backMenuButtons.forEach(btnId => {
         const btn = document.getElementById(btnId);
         if (btn) btn.addEventListener('click', () => {
             stopConquestTimer();
+            stopProjectorTimer();
+            stopBalloonGame();
             switchScreen('main-menu');
         });
     });
@@ -152,6 +197,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('race-play-again-btn')?.addEventListener('click', () => startRace(selectedGrade));
     document.getElementById('tug-play-again-btn')?.addEventListener('click', () => startTug(selectedGrade, selectedTugPlayers));
     document.getElementById('car-race-play-again-btn')?.addEventListener('click', () => startCarRace(selectedGrade, selectedCarPlayers));
+    document.getElementById('projector-play-again-btn')?.addEventListener('click', () => startProjectorMode(selectedGrade));
+    document.getElementById('balloon-play-again-btn')?.addEventListener('click', () => startBalloonGame(selectedGrade));
 
     // Special Game Buttons
     document.getElementById('conquest-pass-btn')?.addEventListener('click', passConquestTurn);

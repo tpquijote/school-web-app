@@ -5,7 +5,8 @@ export const grade2Settings = {
     ops: ['+', '-', '*', '/'],
     memoryTime: 2.0,
     conquestTimerEnabled: false,
-    conquestTimerLimit: 30
+    conquestTimerLimit: 30,
+    mahjongTileCount: 52
 };
 
 // Expose settings on window for backwards compatibility if needed
@@ -203,32 +204,82 @@ export const levelSeeds = {
     }
 };
 
-export function generateLayoutGrid() {
+export function generateLayoutGrid(count = 52) {
+    if (count === 16) {
+        // 16 tiles (8 pairs) - 2 layers: 12 base, 4 top
+        const layout = [];
+        for (let r = 0; r < 3; r++) {
+            for (let c = 0; c < 4; c++) {
+                layout.push({ l: 0, r, c });
+            }
+        }
+        for (let r = 0; r < 2; r++) {
+            for (let c = 1; c <= 2; c++) {
+                layout.push({ l: 1, r, c });
+            }
+        }
+        return layout;
+    }
+
+    if (count === 24) {
+        // 24 tiles (12 pairs) - 2 layers: 18 base, 6 top
+        const layout = [];
+        for (let r = 0; r < 3; r++) {
+            for (let c = 0; c < 6; c++) {
+                layout.push({ l: 0, r, c });
+            }
+        }
+        for (let r = 0; r < 2; r++) {
+            for (let c = 1; c <= 3; c++) {
+                layout.push({ l: 1, r, c });
+            }
+        }
+        return layout;
+    }
+
+    if (count === 36) {
+        // 36 tiles (18 pairs) - 3 layers: 24 base, 8 mid, 4 top
+        const layout = [];
+        for (let r = 0; r < 4; r++) {
+            for (let c = 0; c < 6; c++) {
+                layout.push({ l: 0, r, c });
+            }
+        }
+        for (let r = 1; r <= 2; r++) {
+            for (let c = 1; c <= 4; c++) {
+                layout.push({ l: 1, r, c });
+            }
+        }
+        for (let r = 1; r <= 2; r++) {
+            for (let c = 2; c <= 3; c++) {
+                layout.push({ l: 2, r, c });
+            }
+        }
+        return layout;
+    }
+
+    // Default 52 tiles (26 pairs)
     const layout = [];
-    
-    for(let r=0; r<6; r++) {
-        for(let c=0; c<6; c++) {
-            if ((r===0||r===5) && (c===0||c===5)) continue; 
-            layout.push({l: 0, r: r, c: c});
+    for (let r = 0; r < 6; r++) {
+        for (let c = 0; c < 6; c++) {
+            if ((r === 0 || r === 5) && (c === 0 || c === 5)) continue;
+            layout.push({ l: 0, r, c });
         }
     }
-
-    for(let r=1; r<=4; r++) {
-        for(let c=1; c<=4; c++) {
-            layout.push({l: 1, r: r, c: c});
+    for (let r = 1; r <= 4; r++) {
+        for (let c = 1; c <= 4; c++) {
+            layout.push({ l: 1, r, c });
         }
     }
-
-    for(let r=2; r<=3; r++) {
-        for(let c=2; c<=3; c++) {
-            layout.push({l: 2, r: r, c: c});
+    for (let r = 2; r <= 3; r++) {
+        for (let c = 2; c <= 3; c++) {
+            layout.push({ l: 2, r, c });
         }
     }
-    
     return layout;
 }
 
-export const gameLayout = generateLayoutGrid();
+export const gameLayout = generateLayoutGrid(52);
 
 if (typeof window !== 'undefined') {
     window.levelSeeds = levelSeeds;
